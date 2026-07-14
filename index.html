@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#05060a" />
+    <meta
+      name="description"
+      content="Akshat Kansal: CS undergrad at the University of Washington building AI systems that ship. AI/ML research intern at Nokia Bell Labs."
+    />
+    <meta property="og:title" content="Akshat Kansal · AI · Systems · Software" />
+    <meta
+      property="og:description"
+      content="CS undergrad at UW building AI systems that actually ship. Currently doing AI/ML research at Nokia Bell Labs."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://akshat-kansal.vercel.app/" />
+    <meta property="og:image" content="https://akshat-kansal.vercel.app/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://akshat-kansal.vercel.app/og.png" />
+    <link rel="canonical" href="https://akshat-kansal.vercel.app/" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238b5cf6'/%3E%3Cstop offset='1' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%2305060a'/%3E%3Ctext x='32' y='45' font-family='monospace' font-size='30' font-weight='700' fill='url(%23g)' text-anchor='middle'%3EAK%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <title>Akshat Kansal · AI · Systems · Software</title>
+  </head>
+  <body>
+    <script>
+      /* Set theme before first paint: stored choice wins, otherwise follow
+         the OS preference (defaulting to dark when there's no preference). */
+      document.documentElement.dataset.theme =
+        localStorage.getItem("theme") ||
+        (matchMedia("(prefers-color-scheme: light)").matches
+          ? "light"
+          : "dark");
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
