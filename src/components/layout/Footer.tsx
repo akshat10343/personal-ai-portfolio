@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <footer className="border-t border-line">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 sm:flex-row sm:px-8">
-        <p className="font-mono text-xs text-body/60">
+        <p className="font-mono text-xs text-body/80">
           © {new Date().getFullYear()} {identity.name} · designed & built from
           scratch with React, TypeScript, Tailwind, Framer Motion
         </p>

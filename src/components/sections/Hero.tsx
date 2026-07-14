@@ -133,7 +133,7 @@ export function Hero({ booted }: { booted: boolean }) {
 
           <motion.p
             variants={item}
-            className="mt-10 font-mono text-xs tracking-wide text-body/60"
+            className="mt-10 font-mono text-xs tracking-wide text-body/80"
           >
             <ScrambleText text={`${identity.role} · ${identity.location}`} />
           </motion.p>
