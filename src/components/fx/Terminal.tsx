@@ -192,7 +192,7 @@ export function Terminal() {
   return (
     <div
       ref={ref}
-      onClick={() => inputRef.current?.focus()}
+      onClick={() => inputRef.current?.focus({ preventScroll: true })}
       className={cn(
         "glass ring-gradient dark-island cursor-text overflow-hidden rounded-2xl shadow-[0_24px_80px_-24px_rgba(0,0,0,0.8)] transition-shadow duration-300",
         focused && "shadow-[0_24px_80px_-24px_rgba(0,0,0,0.8),0_0_0_1px_rgba(34,211,238,0.25)]",
@@ -236,7 +236,7 @@ export function Terminal() {
         ))}
 
         {introDone && (
-          <div className="text-bright">
+          <div className="relative text-bright">
             <span className="text-accent-2/90">$ </span>
             {input}
             <span className="animate-blink ml-0.5 inline-block h-4 w-2 translate-y-0.5 bg-accent-2/80" />
