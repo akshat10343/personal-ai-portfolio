@@ -18,7 +18,7 @@ export function Goals() {
   return (
     <Section
       id="goals"
-      index="06"
+      index="07"
       eyebrow="Future Goals"
       title={
         <>

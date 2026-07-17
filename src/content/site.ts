@@ -27,12 +27,73 @@ export const identity = {
 
 export const navLinks = [
   { label: "About", href: "#about" },
+  { label: "Experience", href: "#experience" },
   { label: "Projects", href: "#projects" },
   { label: "Experiments", href: "#experiments" },
   { label: "Writing", href: "#writing" },
   { label: "Skills", href: "#skills" },
   { label: "Goals", href: "#goals" },
   { label: "Contact", href: "#contact" },
+];
+
+export type Experience = {
+  role: string;
+  org: string;
+  period: string;
+  points: string[];
+};
+
+export const experience: Experience[] = [
+  {
+    role: "AI/ML Research Intern",
+    org: "Nokia Bell Labs",
+    period: "Jun 2026 – Aug 2026",
+    points: [
+      "Intrusion-detection research: two public benchmarks audited for label leakage, three model families compared under one frozen protocol, PR-AUC 0.995 at best.",
+      "Shipped the whole pipeline as an installable Python package with a CLI.",
+    ],
+  },
+  {
+    role: "Founding Member & Technical Lead",
+    org: "Tomshield (early-stage startup)",
+    period: "Nov 2024 – Jan 2026",
+    points: [
+      "Built an AI-driven insurance-verification platform for leasing and finance companies; grew it to ~600 users.",
+      "Dockerized Java microservices on AWS Fargate with Jenkins CI/CD.",
+    ],
+  },
+  {
+    role: "Undergraduate Coding Assistant (TA)",
+    org: "University of Washington",
+    period: "Jan 2025 – Present",
+    points: [
+      "Teach programming fundamentals and data structures (CSS 142/143) to ~30 students a quarter.",
+    ],
+  },
+  {
+    role: "President",
+    org: "Trickfire Robotics",
+    period: "Dec 2024 – Present",
+    points: [
+      "Lead a 150+ member robotics organization across 5 engineering sub-teams.",
+    ],
+  },
+  {
+    role: "Founder & President",
+    org: "Eco Car Club",
+    period: "Mar 2025 – Present",
+    points: [
+      "Founded the club, recruited 60+ members, and run weekly hands-on design workshops.",
+    ],
+  },
+  {
+    role: "Software Engineering Intern",
+    org: "Pacific Northwest Chess Center",
+    period: "Jun 2023 – Jan 2024",
+    points: [
+      "Built workflow automation for tournament check-in and board setup used across 15+ events, cutting average wait times by 35%.",
+    ],
+  },
 ];
 
 /** Typed into the hero terminal, line by line. */

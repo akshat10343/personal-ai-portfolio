@@ -8,7 +8,7 @@ export function Skills() {
   return (
     <Section
       id="skills"
-      index="05"
+      index="06"
       eyebrow="Skills"
       title={
         <>

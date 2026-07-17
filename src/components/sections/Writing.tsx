@@ -74,7 +74,7 @@ export function Writing() {
   return (
     <Section
       id="writing"
-      index="04"
+      index="05"
       eyebrow="Writing"
       title={
         <>

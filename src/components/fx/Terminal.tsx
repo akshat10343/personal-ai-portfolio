@@ -86,6 +86,9 @@ function execute(raw: string): Line[] | "clear" {
     case "matrix":
       window.dispatchEvent(new CustomEvent("matrix-mode"));
       return [{ kind: "ok", text: "wake up… (9 seconds of rain)" }];
+    case "tour":
+      window.dispatchEvent(new CustomEvent("start-tour"));
+      return [{ kind: "ok", text: "✓ starting the 30-second tour. esc to exit" }];
     case "rm -rf /":
     case "sudo rm -rf /":
       return [

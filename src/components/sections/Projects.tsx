@@ -5,6 +5,7 @@ import { projects } from "../../content/site";
 import type { Project } from "../../content/site";
 import { NetworkGraph } from "../fx/NetworkGraph";
 import { Chip } from "../ui/Chip";
+import { ProjectVisual } from "../ui/ProjectVisual";
 import { Reveal } from "../ui/Reveal";
 import { Section } from "../ui/Section";
 import { TiltCard } from "../ui/TiltCard";
@@ -209,6 +210,8 @@ function CaseStudyModal({
 
           <p className="mt-6 text-[16px] leading-relaxed">{project.summary}</p>
 
+          <ProjectVisual id={project.id} />
+
           {project.details && (
             <>
               <h4 className="mt-8 font-mono text-xs tracking-[0.2em] text-accent-2/80 uppercase">
@@ -274,7 +277,7 @@ export function Projects() {
   return (
     <Section
       id="projects"
-      index="02"
+      index="03"
       eyebrow="Projects"
       title={
         <>

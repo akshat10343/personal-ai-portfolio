@@ -5,11 +5,14 @@ import { CursorGlow } from "./components/fx/CursorGlow";
 import { IntroOverlay } from "./components/fx/IntroOverlay";
 import { Marquee } from "./components/fx/Marquee";
 import { MatrixRain } from "./components/fx/MatrixRain";
+import { ShortcutsOverlay } from "./components/fx/ShortcutsOverlay";
+import { TourMode } from "./components/fx/TourMode";
 import { ScrollProgress } from "./components/fx/ScrollProgress";
 import { Footer } from "./components/layout/Footer";
 import { Navbar } from "./components/layout/Navbar";
 import { About } from "./components/sections/About";
 import { Contact } from "./components/sections/Contact";
+import { Experience } from "./components/sections/Experience";
 import { Experiments } from "./components/sections/Experiments";
 import { Goals } from "./components/sections/Goals";
 import { Hero } from "./components/sections/Hero";
@@ -55,12 +58,15 @@ function App() {
       <CursorGlow />
       <CommandPalette />
       <MatrixRain />
+      <TourMode />
+      <ShortcutsOverlay />
       <ScrollProgress />
       <Navbar />
       <main>
         <Hero booted={booted} />
         <Marquee />
         <About />
+        <Experience />
         <Projects />
         <Experiments />
         <Writing />

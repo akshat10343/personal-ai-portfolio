@@ -145,7 +145,7 @@ export function Contact() {
             />
 
             <p className="relative font-mono text-[13px] tracking-[0.2em] text-accent-2/80 uppercase">
-              <span className="text-body/50">07 /</span>{" "}
+              <span className="text-body/50">08 /</span>{" "}
               <ScrambleText text="Contact" />
             </p>
             <h2 className="relative mx-auto mt-4 max-w-2xl font-display text-4xl font-bold tracking-tight text-bright sm:text-5xl">

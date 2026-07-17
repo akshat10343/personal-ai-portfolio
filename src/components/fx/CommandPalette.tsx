@@ -8,14 +8,17 @@ import {
 } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
+  Briefcase,
   Check,
   Copy,
   FlaskConical,
   Home,
+  Keyboard,
   Layers,
   Mail,
   PenLine,
   Search,
+  Sparkles,
   SunMoon,
   Target,
   User,
@@ -82,6 +85,7 @@ export function CommandPalette() {
     () => [
       { id: "top", label: "Home", group: "Navigate", icon: <Home size={15} />, run: () => goTo("top") },
       { id: "about", label: "About", group: "Navigate", keywords: "bio me", icon: <User size={15} />, run: () => goTo("about") },
+      { id: "experience", label: "Experience", group: "Navigate", keywords: "work history resume jobs", icon: <Briefcase size={15} />, run: () => goTo("experience") },
       { id: "projects", label: "Projects", group: "Navigate", keywords: "work nids tomshield", icon: <Layers size={15} />, run: () => goTo("projects") },
       { id: "experiments", label: "AI Experiments", group: "Navigate", keywords: "lab log", icon: <FlaskConical size={15} />, run: () => goTo("experiments") },
       { id: "writing", label: "Writing", group: "Navigate", keywords: "posts notes blog", icon: <PenLine size={15} />, run: () => goTo("writing") },
@@ -100,6 +104,28 @@ export function CommandPalette() {
             setTimeout(() => setCopied(false), 1500);
           });
           return "keep-open";
+        },
+      },
+      {
+        id: "tour",
+        label: "Recruiter mode: 30-second tour",
+        group: "Actions",
+        keywords: "recruiter highlights pitch demo",
+        icon: <Sparkles size={15} />,
+        run: () => {
+          close();
+          window.dispatchEvent(new CustomEvent("start-tour"));
+        },
+      },
+      {
+        id: "shortcuts",
+        label: "Keyboard shortcuts",
+        group: "Actions",
+        keywords: "keys help map",
+        icon: <Keyboard size={15} />,
+        run: () => {
+          close();
+          window.dispatchEvent(new CustomEvent("open-shortcuts"));
         },
       },
       {

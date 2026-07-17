@@ -47,7 +47,7 @@ export function Experiments() {
   return (
     <Section
       id="experiments"
-      index="03"
+      index="04"
       eyebrow="AI Experiments"
       title={
         <>

@@ -59,7 +59,7 @@ export function Navbar() {
       >
         <nav
           className={cn(
-            "glass flex w-full max-w-3xl items-center justify-between rounded-full py-2 pr-2 pl-5 transition-shadow duration-300",
+            "glass flex w-full max-w-4xl items-center justify-between rounded-full py-2 pr-2 pl-5 transition-shadow duration-300",
             scrolled && "shadow-[0_12px_40px_-12px_rgba(0,0,0,0.7)]",
           )}
         >
@@ -80,7 +80,7 @@ export function Navbar() {
                   <a
                     href={link.href}
                     className={cn(
-                      "relative rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-200",
+                      "relative rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors duration-200",
                       isActive ? "text-bright" : "text-body hover:text-bright",
                     )}
                   >
