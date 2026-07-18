@@ -28,6 +28,12 @@
   --color-faint: rgba(24, 34, 70, 0.06);
   --color-body: #49536b;
   --color-bright: #0d1120;
+  /* Accents deepen on light backgrounds so colored text stays readable
+     (the vibrant originals come back inside .dark-island). */
+  --color-accent: #7c3aed;
+  --color-accent-2: #0e7490;
+  --color-mint: #047857;
+  --color-amber: #b45309;
 }
 
 :root[data-theme="light"] {
@@ -52,7 +58,24 @@
   --color-faint: rgba(148, 163, 210, 0.07);
   --color-body: #9aa3b8;
   --color-bright: #eef1f8;
+  --color-accent: #8b5cf6;
+  --color-accent-2: #22d3ee;
+  --color-mint: #34d399;
+  --color-amber: #fbbf24;
   background: linear-gradient(160deg, #0d1019, #090b12);
+}
+/* Glass panels sitting inside a dark island keep the dark glass recipe,
+   otherwise they'd go white behind island-light text. */
+:root[data-theme="light"] .dark-island .glass {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.055),
+    rgba(255, 255, 255, 0.02)
+  );
+}
+/* The outlined ghost numerals need a darker stroke on a light page. */
+:root[data-theme="light"] .text-outline {
+  -webkit-text-stroke-color: rgba(24, 34, 70, 0.2);
 }
 :root[data-theme="light"] ::-webkit-scrollbar-thumb {
   background: #c3c9db;
