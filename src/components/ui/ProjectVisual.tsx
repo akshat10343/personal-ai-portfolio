@@ -1,6 +1,5 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Search, ShieldCheck, Sun } from "lucide-react";
-import { NetworkGraph } from "../fx/NetworkGraph";
 
 /**
  * Stylized per-project visuals for the case-study modals. These are
@@ -33,13 +32,28 @@ export function ProjectVisual({ id }: { id: string }) {
 
   let content: React.ReactNode = null;
   switch (id) {
-    case "nids":
+    case "mini-llm":
       content = (
-        <div className="dark-island relative h-36 overflow-hidden rounded-lg border border-line">
-          <NetworkGraph forceDark className="absolute inset-0 opacity-70" />
-          <span className="absolute bottom-2 left-3 font-mono text-[10px] text-body/60">
-            flows in · verdicts out · nothing trusted
-          </span>
+        <div className="dark-island rounded-lg border border-line p-4 font-mono text-[10px] leading-5">
+          {(
+            [
+              ["slot 0", "decode", "Why is a KV cache useful? → reuses every prior key…", "text-mint"],
+              ["slot 1", "decode", "Explain RoPE in one line → rotate q,k by position…", "text-mint"],
+              ["slot 2", "prefill", "Summarize continuous batching ████░░", "text-amber"],
+              ["slot 3", "queued", "waiting for a free cache slot", "text-body/40"],
+            ] as const
+          ).map(([slot, phase, text, cls]) => (
+            <div key={slot} className="flex items-center gap-2 whitespace-nowrap">
+              <span className="text-body/40">{slot}</span>
+              <span className={`w-12 shrink-0 ${cls}`}>{phase}</span>
+              <span className="overflow-hidden text-ellipsis text-body/70">
+                {text}
+              </span>
+            </div>
+          ))}
+          <p className="mt-2 text-body/50">
+            requests in · tokens out · every step correctness-gated
+          </p>
         </div>
       );
       break;

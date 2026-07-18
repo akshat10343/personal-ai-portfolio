@@ -25,7 +25,7 @@ const kindStyles: Record<Kind | "prompt", string> = {
   prompt: "text-bright",
 };
 
-/** The intro pipeline lines, replayable via the `nids all` command. */
+/** The intro engine-boot lines, replayable via the `serve` command. */
 const pipelineLines: Line[] = terminalLines
   .filter((l) => l.kind !== "cmd" && l.kind !== "prompt")
   .map((l) => ({ kind: l.kind as Kind, text: l.text }));
@@ -42,7 +42,7 @@ function execute(raw: string): Line[] | "clear" {
         { kind: "dim", text: "  projects    what he's built" },
         { kind: "dim", text: "  skills      the toolbox" },
         { kind: "dim", text: "  contact     how to reach him" },
-        { kind: "dim", text: "  nids all    re-run the pipeline" },
+        { kind: "dim", text: "  serve       boot the inference engine" },
         { kind: "dim", text: "  theme       flip light/dark" },
         { kind: "dim", text: "  matrix      you know what this does" },
         { kind: "dim", text: "  clear       wipe the screen" },
@@ -51,7 +51,7 @@ function execute(raw: string): Line[] | "clear" {
       return [
         { kind: "out", text: `${identity.name} · CS undergrad @ UW (May 2028)` },
         { kind: "out", text: identity.role },
-        { kind: "dim", text: "hunts data leakage · teaches · leads robotics" },
+        { kind: "dim", text: "builds inference engines · teaches · leads robotics" },
       ];
     case "projects":
       return projects.map((p) => ({
@@ -71,8 +71,8 @@ function execute(raw: string): Line[] | "clear" {
       ];
     case "clear":
       return "clear";
-    case "nids":
-    case "nids all":
+    case "serve":
+    case "mini-llm-serve":
       return [...pipelineLines];
     case "sudo hire akshat":
       return [
@@ -108,7 +108,7 @@ function execute(raw: string): Line[] | "clear" {
 }
 
 /**
- * The hero terminal. Auto-types a real `nids` pipeline run when scrolled
+ * The hero terminal. Auto-types a real engine boot when scrolled
  * into view, then hands the prompt to the visitor: `help`, `whoami`,
  * `sudo hire akshat`… Click anywhere on it to focus.
  */

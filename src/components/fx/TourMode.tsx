@@ -9,7 +9,7 @@ const STOPS = [
   { id: "top", caption: "Akshat Kansal. CS @ UW, AI/ML research intern @ Nokia Bell Labs." },
   { id: "about", caption: "3.87 GPA · leads 150+ engineers · teaches 30 students a quarter." },
   { id: "experience", caption: "Bell Labs research, a founding-team startup, teaching, and two clubs he runs." },
-  { id: "projects", caption: "Flagship: intrusion-detection research. PR-AUC 0.995 on a 560K-row frozen test set." },
+  { id: "projects", caption: "Flagship: an LLM inference engine from raw PyTorch. KV cache, continuous batching, INT8." },
   { id: "writing", caption: "Writes up the methodology, not just the wins." },
   { id: "contact", caption: "Open to Summer 2027 internships. Say hi." },
 ];

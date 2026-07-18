@@ -86,7 +86,7 @@ export function CommandPalette() {
       { id: "top", label: "Home", group: "Navigate", icon: <Home size={15} />, run: () => goTo("top") },
       { id: "about", label: "About", group: "Navigate", keywords: "bio me", icon: <User size={15} />, run: () => goTo("about") },
       { id: "experience", label: "Experience", group: "Navigate", keywords: "work history resume jobs", icon: <Briefcase size={15} />, run: () => goTo("experience") },
-      { id: "projects", label: "Projects", group: "Navigate", keywords: "work nids tomshield", icon: <Layers size={15} />, run: () => goTo("projects") },
+      { id: "projects", label: "Projects", group: "Navigate", keywords: "work llm inference engine tomshield", icon: <Layers size={15} />, run: () => goTo("projects") },
       { id: "experiments", label: "AI Experiments", group: "Navigate", keywords: "lab log", icon: <FlaskConical size={15} />, run: () => goTo("experiments") },
       { id: "writing", label: "Writing", group: "Navigate", keywords: "posts notes blog", icon: <PenLine size={15} />, run: () => goTo("writing") },
       { id: "skills", label: "Skills", group: "Navigate", keywords: "stack tools", icon: <Wrench size={15} />, run: () => goTo("skills") },

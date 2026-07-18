@@ -309,7 +309,7 @@ export function DetectionPlayground() {
               <>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="glass rounded-xl px-3 py-4 text-center">
-                    <p className="text-gradient font-display text-xl font-bold">
+                    <p className="font-display text-xl font-bold text-accent">
                       <Odometer value={pct(stats.blocked, stats.blocked + stats.missed)} />
                     </p>
                     <p className="mt-1 font-mono text-[10px] tracking-wide text-body/60 uppercase">
@@ -317,7 +317,7 @@ export function DetectionPlayground() {
                     </p>
                   </div>
                   <div className="glass rounded-xl px-3 py-4 text-center">
-                    <p className="text-gradient font-display text-xl font-bold">
+                    <p className="font-display text-xl font-bold text-accent">
                       <Odometer
                         value={pct(
                           stats.falseAlarms,
@@ -330,7 +330,7 @@ export function DetectionPlayground() {
                     </p>
                   </div>
                   <div className="glass rounded-xl px-3 py-4 text-center">
-                    <p className="text-gradient font-display text-xl font-bold">
+                    <p className="font-display text-xl font-bold text-accent">
                       <Odometer value={String(stats.inspected)} />
                     </p>
                     <p className="mt-1 font-mono text-[10px] tracking-wide text-body/60 uppercase">
@@ -399,8 +399,8 @@ export function DetectionPlayground() {
 
             <p className="mt-auto font-mono text-[11px] leading-relaxed text-body/50">
               Synthetic traffic, illustrative numbers. No real detector runs in
-              your browser. The real work is in the case study above; this is
-              what the job <em>feels</em> like.
+              your browser. This is what my Bell Labs internship work (see
+              Experience) <em>feels</em> like day to day.
             </p>
           </div>
         </div>

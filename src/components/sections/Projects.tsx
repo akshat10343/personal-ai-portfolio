@@ -17,6 +17,7 @@ import { ProjectVisual } from "../ui/ProjectVisual";
 import { Reveal } from "../ui/Reveal";
 import { Section } from "../ui/Section";
 import { TiltCard } from "../ui/TiltCard";
+import { BatchingPlayground } from "./BatchingPlayground";
 import { DetectionPlayground } from "./DetectionPlayground";
 
 function Bullet({ children }: { children: string }) {
@@ -33,30 +34,30 @@ type OpenProps = { onOpen: (id: string) => void };
 /** The featured card's story, told in three pinned steps (desktop). */
 const SCROLLY_STEPS = [
   {
-    tag: "STEP 1 / 3 · THE AUDIT",
-    heading: "Trust nothing about the data",
+    tag: "STEP 1 / 3 · THE SCRATCH PASS",
+    heading: "Rebuild the model from raw tensors",
     bulletIdx: [0],
     tiles: [
-      ["~400K", "rows removed"],
-      ["2", "benchmarks pinned"],
+      ["1.1B", "params, pinned revision"],
+      ["0.0", "max logit error vs HF"],
     ],
   },
   {
-    tag: "STEP 2 / 3 · THE BAKEOFF",
-    heading: "Three models, one frozen protocol",
+    tag: "STEP 2 / 3 · THE SERVING CORE",
+    heading: "Cache once, batch continuously",
     bulletIdx: [1, 2],
     tiles: [
-      ["5.2M", "raw flows ingested"],
-      ["3", "model families"],
+      ["11.3×", "decode speedup"],
+      ["4.63×", "batch-4 throughput"],
     ],
   },
   {
-    tag: "STEP 3 / 3 · THE RESULTS",
-    heading: "Numbers that survive questions",
+    tag: "STEP 3 / 3 · THE HONEST TRADEOFF",
+    heading: "INT8, with the cost reported",
     bulletIdx: [3, 4],
     tiles: [
-      ["0.995", "PR-AUC · 560K-row test"],
-      ["96.2%", "detection @ 16.6% FA"],
+      ["46.9%", "storage cut"],
+      ["100%", "top-1 agreement"],
     ],
   },
 ] as const;
@@ -232,18 +233,18 @@ function FeaturedProject({ project, onOpen }: { project: Project } & OpenProps) 
               <div className="absolute right-4 bottom-4 left-4 flex gap-3">
                 <div className="glass flex-1 rounded-lg px-4 py-3">
                   <p className="text-gradient font-display text-xl font-bold">
-                    96.2%
+                    11.3×
                   </p>
                   <p className="mt-0.5 font-mono text-[10px] tracking-wide text-body/70 uppercase">
-                    detection @ 16.6% FA
+                    decode speedup
                   </p>
                 </div>
                 <div className="glass flex-1 rounded-lg px-4 py-3">
                   <p className="text-gradient font-display text-xl font-bold">
-                    0.995
+                    4.63×
                   </p>
                   <p className="mt-0.5 font-mono text-[10px] tracking-wide text-body/70 uppercase">
-                    PR-AUC · 560K-row test
+                    batch-4 throughput
                   </p>
                 </div>
               </div>
@@ -487,7 +488,7 @@ export function Projects() {
           research pipelines to real users.
         </>
       }
-      lede="Each of these taught me something different: research rigor at Bell Labs, product urgency at a startup, and craft on everything in between. Click any card for the full story."
+      lede="Each of these taught me something different: systems depth from building an inference engine, product urgency at a startup, and craft on everything in between. Click any card for the full story."
     >
       <div className="space-y-6">
         {featured &&
@@ -496,6 +497,7 @@ export function Projects() {
           ) : (
             <FeaturedProject project={featured} onOpen={setOpenId} />
           ))}
+        <BatchingPlayground />
         <div className="grid gap-6 md:grid-cols-2">
           {rest.map((p, i) => (
             <ProjectCard
