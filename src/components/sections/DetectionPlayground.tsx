@@ -11,9 +11,9 @@ import { Reveal } from "../ui/Reveal";
 
 const SPAWN_MS = 520;
 const BURST_CHANCE = 0.18;
-const VISIBLE_ROWS = 9;
+const VISIBLE_ROWS = 16;
 const ATTACK_RATE = 0.22;
-const DETECT_RATE = 0.97;
+const DETECT_RATE = 0.995;
 const FALSE_ALARM_RATE = 0.05;
 const AUTO_DEPLOY_MS = 6500;
 
@@ -129,11 +129,17 @@ export function DetectionPlayground() {
 
   const [deployed, setDeployed] = useState(false);
   const [autoDeployed, setAutoDeployed] = useState(false);
-  const [rows, setRows] = useState<Flow[]>([]);
+  // Pre-seed a full log so the panel never starts empty.
+  const [rows, setRows] = useState<Flow[]>(() =>
+    Array.from({ length: VISIBLE_ROWS }, (_, i) => ({
+      ...spawnFlow(i, false),
+      time: new Date(Date.now() - (i + 1) * 700).toTimeString().slice(0, 8),
+    })),
+  );
   const [alert, setAlert] = useState<Alert | null>(null);
   const [stats, setStats] = useState<Stats>(ZERO);
   const [pulse, setPulse] = useState(0);
-  const nextId = useRef(0);
+  const nextId = useRef(VISIBLE_ROWS);
   const wasReset = useRef(false);
 
   // Traffic generator, with occasional bursts so it breathes.
@@ -241,7 +247,7 @@ export function DetectionPlayground() {
             }
             animate={{ boxShadow: "0 0 0 0px rgba(248,113,113,0)" }}
             transition={{ duration: 0.7 }}
-            className="dark-island min-h-72 rounded-xl border border-line bg-ink/60 p-4 font-mono text-[11px] leading-6 sm:text-xs"
+            className="dark-island min-h-72 overflow-hidden rounded-xl border border-line bg-ink/60 p-4 font-mono text-[11px] leading-6 sm:text-xs"
           >
             <p className="mb-2 text-body/40">
               {deployed
