@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Backdrop } from "./components/fx/Backdrop";
 import { CommandPalette } from "./components/fx/CommandPalette";
 import { CursorGlow } from "./components/fx/CursorGlow";
+import { DotRail } from "./components/fx/DotRail";
 import { IntroOverlay } from "./components/fx/IntroOverlay";
 import { Marquee } from "./components/fx/Marquee";
 import { MatrixRain } from "./components/fx/MatrixRain";
@@ -9,6 +10,7 @@ import { ShortcutsOverlay } from "./components/fx/ShortcutsOverlay";
 import { TourMode } from "./components/fx/TourMode";
 import { ScrollProgress } from "./components/fx/ScrollProgress";
 import { Footer } from "./components/layout/Footer";
+import { MobileDock } from "./components/layout/MobileDock";
 import { Navbar } from "./components/layout/Navbar";
 import { About } from "./components/sections/About";
 import { Contact } from "./components/sections/Contact";
@@ -62,6 +64,8 @@ function App() {
       <ShortcutsOverlay />
       <ScrollProgress />
       <Navbar />
+      <DotRail />
+      <MobileDock />
       <main>
         <Hero booted={booted} />
         <Marquee />

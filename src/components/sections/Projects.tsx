@@ -1,5 +1,11 @@
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+} from "framer-motion";
 import { ArrowUpRight, ShieldAlert, X } from "lucide-react";
 import { projects } from "../../content/site";
 import type { Project } from "../../content/site";
@@ -22,6 +28,160 @@ function Bullet({ children }: { children: string }) {
 
 type OpenProps = { onOpen: (id: string) => void };
 
+/** The featured card's story, told in three pinned steps (desktop). */
+const SCROLLY_STEPS = [
+  {
+    tag: "STEP 1 / 3 · THE AUDIT",
+    heading: "Trust nothing about the data",
+    bulletIdx: [0],
+    tiles: [
+      ["~400K", "rows removed"],
+      ["2", "benchmarks pinned"],
+    ],
+  },
+  {
+    tag: "STEP 2 / 3 · THE BAKEOFF",
+    heading: "Three models, one frozen protocol",
+    bulletIdx: [1, 2],
+    tiles: [
+      ["5.2M", "raw flows ingested"],
+      ["3", "model families"],
+    ],
+  },
+  {
+    tag: "STEP 3 / 3 · THE RESULTS",
+    heading: "Numbers that survive questions",
+    bulletIdx: [3, 4],
+    tiles: [
+      ["0.995", "PR-AUC · 560K-row test"],
+      ["96.2%", "detection @ 16.6% FA"],
+    ],
+  },
+] as const;
+
+function FeaturedScrolly({ project, onOpen }: { project: Project } & OpenProps) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [step, setStep] = useState(0);
+
+  const { scrollYProgress } = useScroll({
+    target: wrapRef,
+    offset: ["start start", "end end"],
+  });
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    setStep(
+      Math.max(
+        0,
+        Math.min(SCROLLY_STEPS.length - 1, Math.floor(v * SCROLLY_STEPS.length)),
+      ),
+    );
+  });
+
+  const s = SCROLLY_STEPS[step];
+
+  return (
+    <div ref={wrapRef} className="relative h-[240vh]">
+      <div className="sticky top-24">
+        <motion.div
+          layoutId={`proj-${project.id}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => onOpen(project.id)}
+          onKeyDown={(e) => e.key === "Enter" && onOpen(project.id)}
+          className="cursor-pointer"
+        >
+          <TiltCard tilt={1.5} className="border-beam p-8 md:p-10">
+            <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+              <div>
+                <p className="font-mono text-xs tracking-wide text-accent-2/80">
+                  FEATURED · {project.period}
+                </p>
+                <h3 className="mt-3 font-display text-2xl font-semibold text-bright sm:text-3xl">
+                  {project.title}
+                </h3>
+                <p className="mt-1.5 text-sm text-body/70">{project.org}</p>
+                <p className="mt-4 text-[16px] leading-relaxed">
+                  {project.summary}
+                </p>
+
+                <div className="mt-6 min-h-52">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={step}
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -14 }}
+                      transition={{ duration: 0.28 }}
+                    >
+                      <p className="font-mono text-[11px] tracking-[0.18em] text-accent-2/80">
+                        {s.tag}
+                      </p>
+                      <h4 className="mt-2 font-display text-lg font-semibold text-bright">
+                        {s.heading}
+                      </h4>
+                      <ul className="mt-3 space-y-3">
+                        {s.bulletIdx.map((i) => (
+                          <Bullet key={i}>{project.bullets[i]}</Bullet>
+                        ))}
+                      </ul>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                <div className="mt-5 flex gap-2">
+                  {SCROLLY_STEPS.map((st, i) => (
+                    <span
+                      key={st.tag}
+                      className={`h-1 flex-1 rounded-full transition-colors duration-500 ${
+                        i <= step
+                          ? "bg-gradient-to-r from-accent to-accent-2"
+                          : "bg-bright/[0.08]"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {project.tech.map((t) => (
+                    <Chip key={t}>{t}</Chip>
+                  ))}
+                </div>
+                <p className="mt-4 font-mono text-xs text-accent-2/70">
+                  keep scrolling for the story · click for the case study +
+                </p>
+              </div>
+
+              <div className="dark-island relative hidden min-h-72 overflow-hidden rounded-xl border border-line bg-ink/60 lg:block">
+                <NetworkGraph forceDark className="absolute inset-0 opacity-80" />
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={step}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.28 }}
+                    className="absolute right-4 bottom-4 left-4 flex gap-3"
+                  >
+                    {s.tiles.map(([value, label]) => (
+                      <div key={label} className="glass flex-1 rounded-lg px-4 py-3">
+                        <p className="text-gradient font-display text-xl font-bold">
+                          {value}
+                        </p>
+                        <p className="mt-0.5 font-mono text-[10px] tracking-wide text-body/70 uppercase">
+                          {label}
+                        </p>
+                      </div>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+          </TiltCard>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
 function FeaturedProject({ project, onOpen }: { project: Project } & OpenProps) {
   return (
     <Reveal>
@@ -33,7 +193,7 @@ function FeaturedProject({ project, onOpen }: { project: Project } & OpenProps) 
         onKeyDown={(e) => e.key === "Enter" && onOpen(project.id)}
         className="cursor-pointer"
       >
-        <TiltCard tilt={2} className="p-8 md:p-10">
+        <TiltCard tilt={2} className="border-beam p-8 md:p-10">
           <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
             <div>
               <p className="font-mono text-xs tracking-wide text-accent-2/80">
@@ -270,9 +430,20 @@ function CaseStudyModal({
 
 export function Projects() {
   const [openId, setOpenId] = useState<string | null>(null);
+  const reduce = useReducedMotion();
   const featured = projects.find((p) => p.featured);
   const rest = projects.filter((p) => !p.featured);
   const openProject = projects.find((p) => p.id === openId);
+
+  // Scrollytelling only where there's room to pin (and motion is welcome).
+  const [isDesktop, setIsDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   return (
     <Section
@@ -288,7 +459,12 @@ export function Projects() {
       lede="Each of these taught me something different: research rigor at Bell Labs, product urgency at a startup, and craft on everything in between. Click any card for the full story."
     >
       <div className="space-y-6">
-        {featured && <FeaturedProject project={featured} onOpen={setOpenId} />}
+        {featured &&
+          (isDesktop && !reduce ? (
+            <FeaturedScrolly project={featured} onOpen={setOpenId} />
+          ) : (
+            <FeaturedProject project={featured} onOpen={setOpenId} />
+          ))}
         <div className="grid gap-6 md:grid-cols-2">
           {rest.map((p, i) => (
             <ProjectCard

@@ -9,7 +9,8 @@ import {
   useTransform,
   useVelocity,
 } from "framer-motion";
-import { marqueeItems } from "../../content/site";
+import type { CSSProperties } from "react";
+import { LogoMark, techLogos } from "../ui/TechLogos";
 
 const BASE_SPEED = 2.6; // % of half-row per second
 
@@ -26,7 +27,7 @@ const wrap = (min: number, max: number, v: number) => {
  */
 export function Marquee() {
   const reduce = useReducedMotion();
-  const row = [...marqueeItems, ...marqueeItems];
+  const row = [...techLogos, ...techLogos];
 
   const baseX = useMotionValue(0);
   const { scrollY } = useScroll();
@@ -57,18 +58,22 @@ export function Marquee() {
   return (
     <div
       aria-hidden
-      className="relative overflow-hidden border-y border-line bg-bright/[0.02] py-4 [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
+      className="relative overflow-hidden border-y border-line bg-bright/[0.02] py-3.5 [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
     >
       <motion.div
         style={reduce ? undefined : { x, skewX }}
         className="flex w-max"
       >
-        {row.map((item, i) => (
+        {row.map((logo, i) => (
           <span
             key={i}
-            className="flex items-center font-mono text-xs tracking-[0.3em] whitespace-nowrap text-body/50 uppercase"
+            style={{ "--brand": `#${logo.hex}` } as CSSProperties}
+            className="flex items-center whitespace-nowrap"
           >
-            <span className="px-6">{item}</span>
+            <span className="flex items-center gap-2.5 px-6 font-mono text-xs tracking-[0.2em] text-body/50 uppercase transition-colors duration-300 hover:text-(--brand)">
+              <LogoMark logo={logo} />
+              {logo.title}
+            </span>
             <span className="text-accent/50">✦</span>
           </span>
         ))}

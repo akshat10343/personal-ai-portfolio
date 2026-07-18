@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Copy, FileDown, Loader2, Mail, Send } from "lucide-react";
 import { contact, identity } from "../../content/site";
+import { confettiBurst } from "../../lib/confetti";
 import { GithubIcon, LinkedinIcon } from "../ui/BrandIcons";
 import { MagneticButton } from "../ui/MagneticButton";
 import { Reveal } from "../ui/Reveal";
@@ -43,6 +44,11 @@ function ContactForm() {
       });
       if (!res.ok) throw new Error(`form POST failed: ${res.status}`);
       setStatus("sent");
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) {
+        const rect = btn.getBoundingClientRect();
+        confettiBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      }
       form.reset();
     } catch {
       setStatus("error");
@@ -123,10 +129,12 @@ function ContactForm() {
 export function Contact() {
   const [copied, setCopied] = useState(false);
 
-  async function copyEmail() {
+  async function copyEmail(e: React.MouseEvent<HTMLButtonElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
     try {
       await navigator.clipboard.writeText(identity.email);
       setCopied(true);
+      confettiBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
       setTimeout(() => setCopied(false), 1800);
     } catch {
       // Clipboard unavailable (permissions/older browser) — mailto still works.

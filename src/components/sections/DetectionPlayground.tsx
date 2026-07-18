@@ -198,7 +198,7 @@ export function DetectionPlayground() {
     <Reveal>
       <div
         ref={ref}
-        className="glass ring-gradient overflow-hidden rounded-2xl p-7 md:p-8"
+        className="glass ring-gradient border-beam overflow-hidden rounded-2xl p-7 md:p-8"
       >
         <div className="flex flex-wrap items-center gap-4">
           <div>

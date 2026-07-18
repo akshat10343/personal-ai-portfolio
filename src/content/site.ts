@@ -106,24 +106,6 @@ export const terminalLines = [
   { text: "$", kind: "prompt" },
 ] as const;
 
-/** Ticker band under the hero — keep to verified tools + honest phrases. */
-export const marqueeItems = [
-  "PyTorch",
-  "Hugging Face",
-  "scikit-learn",
-  "reproducible pipelines",
-  "Docker",
-  "AWS Fargate",
-  "React",
-  "Node.js",
-  "leakage audits",
-  "pandas",
-  "TensorFlow / Keras",
-  "Jenkins CI/CD",
-  "Linux",
-  "data contracts",
-];
-
 export const about = {
   heading: "Research-grade curiosity, production-grade habits.",
   paragraphs: [

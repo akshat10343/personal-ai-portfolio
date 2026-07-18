@@ -8,6 +8,7 @@ import {
 import { cn } from "../../lib/utils";
 import { Reveal } from "./Reveal";
 import { ScrambleText } from "./ScrambleText";
+import { ScrubText } from "./ScrubText";
 
 type SectionProps = {
   id: string;
@@ -61,7 +62,12 @@ export function Section({
           <h2 className="mt-4 max-w-2xl font-display text-3xl font-semibold tracking-tight text-bright sm:text-[2.6rem] sm:leading-[1.1]">
             {title}
           </h2>
-          {lede && <p className="mt-5 max-w-2xl text-lg leading-relaxed">{lede}</p>}
+          {lede && (
+            <ScrubText
+              text={lede}
+              className="mt-5 max-w-2xl text-lg leading-relaxed"
+            />
+          )}
         </Reveal>
         <div className="relative mt-12 md:mt-16">{children}</div>
       </div>

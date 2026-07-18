@@ -149,6 +149,31 @@
     color: transparent;
   }
 
+  /* A streak of light traveling along the element's border */
+  .border-beam {
+    position: relative;
+  }
+  .border-beam::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: conic-gradient(
+      from var(--beam-angle),
+      transparent 0deg 322deg,
+      rgba(34, 211, 238, 0.9) 338deg,
+      rgba(139, 92, 246, 0.9) 352deg,
+      transparent 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
   /* Hairline gradient border drawn in a masked ::before */
   .ring-gradient {
     position: relative;
@@ -206,6 +231,20 @@
   }
   .text-gradient-animated {
     animation: shimmer 7s ease-in-out infinite alternate;
+  }
+  .border-beam::after {
+    animation: beam-rotate 7s linear infinite;
+  }
+}
+
+@property --beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes beam-rotate {
+  to {
+    --beam-angle: 360deg;
   }
 }
 
