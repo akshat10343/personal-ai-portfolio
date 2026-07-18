@@ -77,6 +77,25 @@
 :root[data-theme="light"] .text-outline {
   -webkit-text-stroke-color: rgba(24, 34, 70, 0.2);
 }
+
+/* Gradient-filled text: the dark-theme pastels wash out on white, so the
+   light theme deepens them; dark islands restore the vibrant originals. */
+:root[data-theme="light"] .text-gradient {
+  background-image: linear-gradient(92deg, #6d28d9 0%, #4f46e5 40%, #0e7490 100%);
+}
+:root[data-theme="light"] .text-gradient-animated {
+  background-image: linear-gradient(
+    100deg,
+    #6d28d9 0%,
+    #4f46e5 30%,
+    #0e7490 55%,
+    #4f46e5 80%,
+    #6d28d9 100%
+  );
+}
+:root[data-theme="light"] .dark-island .text-gradient {
+  background-image: linear-gradient(92deg, #a78bfa 0%, #818cf8 40%, #22d3ee 100%);
+}
 :root[data-theme="light"] ::-webkit-scrollbar-thumb {
   background: #c3c9db;
 }
