@@ -7,6 +7,8 @@ import { Reveal } from "../ui/Reveal";
 import { Section } from "../ui/Section";
 
 function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
+  const [progress, setProgress] = useState(0);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -16,6 +18,12 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
       document.body.style.overflow = "";
     };
   }, [onClose]);
+
+  function onScroll(e: React.UIEvent<HTMLDivElement>) {
+    const el = e.currentTarget;
+    const max = el.scrollHeight - el.clientHeight;
+    setProgress(max > 0 ? el.scrollTop / max : 0);
+  }
 
   return (
     <>
@@ -30,8 +38,17 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
       <div className="pointer-events-none fixed inset-0 z-[53] flex items-center justify-center p-4 sm:p-8">
         <motion.div
           layoutId={`post-${post.slug}`}
-          className="pointer-events-auto max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-line bg-surface/[0.97] p-7 shadow-[0_40px_120px_-24px_rgba(0,0,0,0.6)] backdrop-blur-2xl sm:p-9"
+          onScroll={onScroll}
+          className="pointer-events-auto max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-line bg-surface/[0.97] shadow-[0_40px_120px_-24px_rgba(0,0,0,0.6)] backdrop-blur-2xl"
         >
+          {/* reading progress */}
+          <div className="sticky top-0 z-10 h-1 w-full bg-bright/[0.05]">
+            <div
+              className="h-full bg-gradient-to-r from-accent to-accent-2 transition-[width] duration-150"
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+          <div className="p-7 sm:p-9">
           <div className="flex items-start justify-between gap-6">
             <div>
               <p className="font-mono text-xs tracking-wide text-accent-2/80 uppercase">
@@ -50,9 +67,16 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
               <X size={16} />
             </button>
           </div>
-          <div className="mt-6 space-y-5">
+          <div className="mt-6 space-y-6">
             {post.body.map((para, i) => (
-              <p key={i} className="text-[15.5px] leading-relaxed">
+              <p
+                key={i}
+                className={
+                  i === 0
+                    ? "font-serif text-[17px] leading-8 first-letter:float-left first-letter:mr-2.5 first-letter:font-display first-letter:text-[3.3em] first-letter:leading-[0.82] first-letter:text-accent"
+                    : "font-serif text-[17px] leading-8"
+                }
+              >
                 {para}
               </p>
             ))}
@@ -61,6 +85,7 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
             Written from a real project. Details generalized where they
             involve internship work.
           </p>
+          </div>
         </motion.div>
       </div>
     </>

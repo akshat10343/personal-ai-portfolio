@@ -7,6 +7,9 @@ export function Backdrop() {
   return (
     <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden">
       <div className="animate-hue absolute inset-0">
+        <div className="absolute -top-[42%] left-1/2 h-[95vmax] w-[95vmax] -translate-x-1/2 opacity-25 blur-[120px]">
+          <div className="mesh-spin animate-mesh h-full w-full rounded-full" />
+        </div>
         <div className="animate-drift-1 absolute -top-[30%] left-[8%] h-[55vmax] w-[55vmax] rounded-full bg-accent/[0.17] blur-[110px]" />
         <div className="animate-drift-2 absolute -top-[12%] right-[2%] h-[42vmax] w-[42vmax] rounded-full bg-accent-2/[0.12] blur-[110px]" />
         <div className="animate-drift-3 absolute top-[48%] left-[38%] h-[36vmax] w-[36vmax] rounded-full bg-indigo-500/[0.10] blur-[120px]" />

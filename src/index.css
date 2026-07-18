@@ -252,6 +252,9 @@
   .animate-hue {
     animation: hue 36s ease-in-out infinite alternate;
   }
+  .animate-mesh {
+    animation: mesh-rotate 90s linear infinite;
+  }
   .text-gradient-animated {
     animation: shimmer 7s ease-in-out infinite alternate;
   }
@@ -313,4 +316,22 @@
   to {
     visibility: hidden;
   }
+}
+@keyframes mesh-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Slow conic wash behind the hero, one layer under the blobs */
+.mesh-spin {
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(139, 92, 246, 0.5),
+    transparent 25%,
+    rgba(34, 211, 238, 0.4) 50%,
+    transparent 70%,
+    rgba(217, 70, 239, 0.35) 85%,
+    rgba(139, 92, 246, 0.5)
+  );
 }

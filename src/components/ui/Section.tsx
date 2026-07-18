@@ -45,6 +45,11 @@ export function Section({
 
   return (
     <section ref={ref} id={id} className={cn("relative scroll-mt-28", className)}>
+      {/* angled seam between sections */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-1/2 h-px w-[92%] max-w-5xl -translate-x-1/2 -rotate-[0.6deg] bg-gradient-to-r from-transparent via-accent/25 to-transparent"
+      />
       <div className="relative mx-auto max-w-6xl px-5 py-24 sm:px-8 md:py-32">
         <motion.span
           aria-hidden

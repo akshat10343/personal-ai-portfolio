@@ -10,7 +10,9 @@ import { ArrowUpRight, ShieldAlert, X } from "lucide-react";
 import { projects } from "../../content/site";
 import type { Project } from "../../content/site";
 import { NetworkGraph } from "../fx/NetworkGraph";
+import { CaseCharts } from "../ui/CaseCharts";
 import { Chip } from "../ui/Chip";
+import { Gallery } from "../ui/Gallery";
 import { ProjectVisual } from "../ui/ProjectVisual";
 import { Reveal } from "../ui/Reveal";
 import { Section } from "../ui/Section";
@@ -344,20 +346,13 @@ function CaseStudyModal({
       <div className="pointer-events-none fixed inset-0 z-[53] flex items-center justify-center p-4 sm:p-8">
         <motion.div
           layoutId={`proj-${project.id}`}
-          className="pointer-events-auto max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-line bg-surface/[0.97] p-7 shadow-[0_40px_120px_-24px_rgba(0,0,0,0.6)] backdrop-blur-2xl sm:p-9"
+          className="pointer-events-auto max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-line bg-surface/[0.97] shadow-[0_40px_120px_-24px_rgba(0,0,0,0.6)] backdrop-blur-2xl"
         >
-          <div className="flex items-start justify-between gap-6">
-            <div>
-              <p className="font-mono text-xs tracking-wide text-accent-2/80">
-                CASE STUDY · {project.period}
-              </p>
-              <h3 className="mt-2 font-display text-2xl font-bold text-bright sm:text-3xl">
-                {project.title}
-              </h3>
-              {project.org && (
-                <p className="mt-1.5 text-sm text-body/70">{project.org}</p>
-              )}
-            </div>
+          {/* sticky mini header */}
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-line bg-surface/85 px-7 py-3.5 backdrop-blur-xl sm:px-9">
+            <p className="font-mono text-xs tracking-wide text-accent-2/80">
+              CASE STUDY · {project.period}
+            </p>
             <button
               type="button"
               onClick={onClose}
@@ -368,9 +363,44 @@ function CaseStudyModal({
             </button>
           </div>
 
-          <p className="mt-6 text-[16px] leading-relaxed">{project.summary}</p>
+          {/* hero band */}
+          <div className="relative overflow-hidden px-7 pt-7 pb-6 sm:px-9">
+            <div
+              aria-hidden
+              className="absolute -top-20 left-1/3 h-56 w-[30rem] -translate-x-1/2 rounded-full bg-accent/15 blur-[90px]"
+            />
+            <h3 className="relative font-display text-3xl font-bold text-bright sm:text-4xl">
+              {project.title}
+            </h3>
+            {project.org && (
+              <p className="relative mt-2 text-sm text-body/70">{project.org}</p>
+            )}
+            {project.heroStats && (
+              <div className="relative mt-5 flex flex-wrap gap-3">
+                {project.heroStats.map(([value, label]) => (
+                  <div
+                    key={label}
+                    className="glass rounded-xl px-4 py-2.5"
+                  >
+                    <span className="text-gradient font-display text-xl font-bold">
+                      {value}
+                    </span>
+                    <span className="ml-2 font-mono text-[10px] tracking-wide text-body/70 uppercase">
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="px-7 pb-8 sm:px-9">
+          <p className="text-[16px] leading-relaxed">{project.summary}</p>
 
           <ProjectVisual id={project.id} />
+
+          {project.charts && <CaseCharts charts={project.charts} />}
+          {project.gallery && <Gallery images={project.gallery} />}
 
           {project.details && (
             <>
@@ -422,6 +452,7 @@ function CaseStudyModal({
               {project.note}
             </p>
           )}
+          </div>
         </motion.div>
       </div>
     </>

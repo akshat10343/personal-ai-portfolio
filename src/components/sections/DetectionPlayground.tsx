@@ -7,6 +7,7 @@ import {
 } from "framer-motion";
 import { Radar, RotateCcw, ShieldCheck, TriangleAlert } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { Odometer } from "../ui/Odometer";
 import { Reveal } from "../ui/Reveal";
 
 const SPAWN_MS = 520;
@@ -309,7 +310,7 @@ export function DetectionPlayground() {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="glass rounded-xl px-3 py-4 text-center">
                     <p className="text-gradient font-display text-xl font-bold">
-                      {pct(stats.blocked, stats.blocked + stats.missed)}
+                      <Odometer value={pct(stats.blocked, stats.blocked + stats.missed)} />
                     </p>
                     <p className="mt-1 font-mono text-[10px] tracking-wide text-body/60 uppercase">
                       detection
@@ -317,10 +318,12 @@ export function DetectionPlayground() {
                   </div>
                   <div className="glass rounded-xl px-3 py-4 text-center">
                     <p className="text-gradient font-display text-xl font-bold">
-                      {pct(
-                        stats.falseAlarms,
-                        stats.inspected - stats.blocked - stats.missed,
-                      )}
+                      <Odometer
+                        value={pct(
+                          stats.falseAlarms,
+                          stats.inspected - stats.blocked - stats.missed,
+                        )}
+                      />
                     </p>
                     <p className="mt-1 font-mono text-[10px] tracking-wide text-body/60 uppercase">
                       false alarms
@@ -328,7 +331,7 @@ export function DetectionPlayground() {
                   </div>
                   <div className="glass rounded-xl px-3 py-4 text-center">
                     <p className="text-gradient font-display text-xl font-bold">
-                      {stats.inspected}
+                      <Odometer value={String(stats.inspected)} />
                     </p>
                     <p className="mt-1 font-mono text-[10px] tracking-wide text-body/60 uppercase">
                       inspected
@@ -376,7 +379,7 @@ export function DetectionPlayground() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-xl border border-line px-3 py-2.5 text-center">
                     <p className="font-display text-lg font-semibold text-red-400/90">
-                      {stats.blocked}
+                      <Odometer value={String(stats.blocked)} />
                     </p>
                     <p className="font-mono text-[10px] text-body/60 uppercase">
                       attacks blocked
@@ -384,7 +387,7 @@ export function DetectionPlayground() {
                   </div>
                   <div className="rounded-xl border border-line px-3 py-2.5 text-center">
                     <p className="font-display text-lg font-semibold text-body/70">
-                      {stats.missed}
+                      <Odometer value={String(stats.missed)} />
                     </p>
                     <p className="font-mono text-[10px] text-body/60 uppercase">
                       slipped through

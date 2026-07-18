@@ -138,6 +138,26 @@ export type Project = {
     approach: string[];
     learned: string;
   };
+  /** Headline metrics shown in the case-study hero band. */
+  heroStats?: Array<[string, string]>;
+  /** Animated charts inside the case study. Values must be real. */
+  charts?: Array<{
+    title: string;
+    note?: string;
+    min?: number;
+    max: number;
+    bars: Array<{
+      label: string;
+      value: number;
+      display: string;
+      accent?: boolean;
+    }>;
+  }>;
+  /**
+   * Screenshots for the case-study gallery. Drop images in public/projects/
+   * and add entries like { src: "/projects/solarsave-1.png", caption: "..." }.
+   */
+  gallery?: Array<{ src: string; caption: string }>;
 };
 
 export const projects: Project[] = [
@@ -171,6 +191,42 @@ export const projects: Project[] = [
       learned:
         "Research code doesn't have to be throwaway code. And most benchmark numbers deserve suspicion until you've audited the data yourself.",
     },
+    heroStats: [
+      ["0.995", "PR-AUC · frozen 560K test"],
+      ["96.2%", "detection @ 16.6% FA"],
+      ["5.2M", "raw flows ingested"],
+    ],
+    charts: [
+      {
+        title: "Model bakeoff · PR-AUC on the frozen test set",
+        note: "axis 0.980 to 1.000",
+        min: 0.98,
+        max: 1,
+        bars: [
+          { label: "decision tree", value: 0.9912, display: "0.991" },
+          { label: "random forest", value: 0.9942, display: "0.994" },
+          { label: "XGBoost", value: 0.9948, display: "0.995", accent: true },
+        ],
+      },
+      {
+        title: "False alarms at constant 98.4% detection (first benchmark)",
+        max: 35,
+        bars: [
+          { label: "decision-tree baseline", value: 31.5, display: "31.5%" },
+          { label: "tuned ensembles", value: 25.5, display: "25.5%", accent: true },
+        ],
+      },
+      {
+        title: "Where every model struggles · detection by category (best model)",
+        max: 100,
+        bars: [
+          { label: "flood attacks", value: 100, display: "100%" },
+          { label: "dictionary brute force", value: 79.4, display: "79.4%" },
+          { label: "recon ping sweep", value: 74.3, display: "74.3%" },
+          { label: "recon OS scan", value: 70.1, display: "70.1%", accent: true },
+        ],
+      },
+    ],
   },
   {
     id: "tomshield",
@@ -196,6 +252,7 @@ export const projects: Project[] = [
       learned:
         "Founding-team engineering means owning everything from system design to support, and shipping something real beats polishing something imaginary.",
     },
+    heroStats: [["~600", "users at peak"]],
   },
   {
     id: "nlp-finance",
@@ -221,6 +278,7 @@ export const projects: Project[] = [
       learned:
         "Baselines first, always: logistic regression put up a genuine fight, and beating it honestly is the only yardstick that means anything.",
     },
+    heroStats: [["96.9%", "BERT test accuracy"]],
   },
   {
     id: "solarsave",
