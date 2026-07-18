@@ -50,7 +50,6 @@ export const experience: Experience[] = [
     period: "Jun 2026 – Aug 2026",
     points: [
       "Intrusion-detection research: two public benchmarks audited for label leakage, three model families compared under one frozen protocol, PR-AUC 0.995 at best.",
-      "Shipped the whole pipeline as an installable Python package with a CLI.",
     ],
   },
   {
