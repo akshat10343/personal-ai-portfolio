@@ -237,7 +237,7 @@ export function DetectionPlayground() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           {/* flow log */}
           <motion.div
             key={pulse > 0 ? `pulse-${pulse}` : "calm"}

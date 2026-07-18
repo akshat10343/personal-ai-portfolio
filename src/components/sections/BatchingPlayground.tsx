@@ -5,9 +5,12 @@ import { cn } from "../../lib/utils";
 import { Odometer } from "../ui/Odometer";
 import { Reveal } from "../ui/Reveal";
 
-const TICK_MS = 150;
+const TICK_MS = 230;
 const SLOTS = 4;
 const PREFILL_TICKS = 4;
+/** Finished requests linger this many ticks before the slot frees, so the
+ *  completed answer is actually readable. */
+const DONE_TICKS = 8;
 const ARRIVE_MIN = 5;
 const ARRIVE_MAX = 12;
 const MAX_QUEUE = 5;
@@ -46,7 +49,7 @@ const CORPUS = [
   },
 ] as const;
 
-type Phase = "queued" | "prefill" | "decode";
+type Phase = "queued" | "prefill" | "decode" | "done";
 
 type Req = {
   id: number;
@@ -58,6 +61,7 @@ type Req = {
   slot: number | null;
   queuedTick: number;
   admittedTick: number | null;
+  doneLeft: number;
 };
 
 type Sim = {
@@ -85,6 +89,7 @@ function newReq(id: number, tick: number): Req {
     slot: null,
     queuedTick: tick,
     admittedTick: null,
+    doneLeft: DONE_TICKS,
   };
 }
 
@@ -118,18 +123,20 @@ function step(s: Sim): Sim {
     if (q.phase === "prefill") {
       q.prefillLeft -= 1;
       if (q.prefillLeft <= 0) q.phase = "decode";
-    } else if (q.phase === "decode" && Math.random() > 0.12) {
+    } else if (q.phase === "decode" && Math.random() > 0.22) {
       q.emitted += 1;
       tokensOut += 1;
+      if (q.emitted >= q.tokens.length) {
+        q.phase = "done";
+        completed += 1;
+      }
+    } else if (q.phase === "done") {
+      q.doneLeft -= 1;
     }
   }
 
-  // 2. release finished requests
-  reqs = reqs.filter((q) => {
-    const finished = q.phase === "decode" && q.emitted >= q.tokens.length;
-    if (finished) completed += 1;
-    return !finished;
-  });
+  // 2. release requests that finished their readable hold
+  reqs = reqs.filter((q) => !(q.phase === "done" && q.doneLeft <= 0));
 
   // 3. admit queued requests into free slots
   const used = new Set(reqs.filter((q) => q.slot !== null).map((q) => q.slot));
@@ -160,7 +167,12 @@ const phaseChip: Record<Phase, string> = {
   queued: "text-body/40",
   prefill: "text-amber",
   decode: "text-mint",
+  done: "text-accent-2",
 };
+
+/** Keep the newest tokens visible once a line outgrows its slot. */
+const tail = (text: string, max: number) =>
+  text.length <= max ? text : "… " + text.slice(text.length - max);
 
 /**
  * A toy continuous-batching scheduler running the featured project's actual
@@ -244,9 +256,9 @@ export function BatchingPlayground() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           {/* cache slots */}
-          <div className="dark-island rounded-xl border border-line bg-ink/60 p-4 font-mono text-[11px] sm:text-xs">
+          <div className="dark-island min-w-0 rounded-xl border border-line bg-ink/60 p-4 font-mono text-[11px] sm:text-xs">
             <p className="mb-3 flex items-center gap-2 text-body/40">
               <Cpu size={12} />
               scheduler: decode active → release finished → admit queued
@@ -288,10 +300,17 @@ export function BatchingPlayground() {
                             {"█".repeat(PREFILL_TICKS - q.prefillLeft)}
                             {"░".repeat(q.prefillLeft)}
                           </span>
+                        ) : q.phase === "done" ? (
+                          <span className="text-body/70">
+                            <span className="text-accent-2">✓ </span>
+                            {q.tokens.join(" ")}
+                          </span>
                         ) : (
                           <span className="text-body/70">
-                            <span className="text-body/45">{q.prompt} → </span>
-                            {q.tokens.slice(0, q.emitted).join(" ")}
+                            {tail(
+                              q.prompt + " → " + q.tokens.slice(0, q.emitted).join(" "),
+                              84,
+                            )}
                             <span className="animate-blink text-mint">▊</span>
                           </span>
                         )
@@ -306,7 +325,7 @@ export function BatchingPlayground() {
           </div>
 
           {/* right column: stats + queue */}
-          <div className="flex flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="glass rounded-xl px-3 py-4 text-center">
                 <p className="font-display text-xl font-bold text-accent">
