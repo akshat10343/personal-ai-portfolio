@@ -19,15 +19,7 @@ npm run preview  # serve the production build locally
 one file to change your name, links, projects, experiments, skills, goals,
 and contact info — no component changes needed.
 
-Content conventions used there:
 
-- ⚠️ **Before deploying publicly:** the Nokia Bell Labs project is described
-  in intentionally generalized terms (no internal dataset names), but the
-  headline metrics (99.999% detection / 0.979 PR-AUC) still need manager
-  sign-off. Remove them from `site.ts` if that sign-off doesn't come through.
-- Unverified resume items (SQL, TypeScript, XGBoost, RAG, etc.) are
-  deliberately excluded from the skills list until confirmed.
-- The About card uses an "AK" monogram — swap in a real photo when ready.
 
 ## Interactive features
 
