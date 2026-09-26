@@ -1,10 +1,9 @@
 <!doctype html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#fbfbfa" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0f0f0e" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#000000" />
     <meta
       name="description"
       content="Akshat Kansal: computer science at the University of Washington. Former AI/ML research intern at Nokia Bell Labs. Builds ML systems from scratch, like an LLM inference engine in raw PyTorch. Open to Summer 2027 internships."
@@ -44,17 +43,6 @@
     <title>Akshat Kansal · ML systems & software</title>
   </head>
   <body>
-    <script>
-      /* Set the theme before first paint: a stored choice wins, otherwise
-         follow the OS (light when it has no preference). */
-      try {
-        document.documentElement.dataset.theme =
-          localStorage.getItem("theme") ||
-          (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-      } catch {
-        document.documentElement.dataset.theme = "light";
-      }
-    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

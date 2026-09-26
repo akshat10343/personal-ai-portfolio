@@ -1,8 +1,9 @@
 # personal-ai-portfolio
 
-Akshat Kansal's personal site: a fast, single-page portfolio built with
-React 19, Vite, TypeScript, Tailwind CSS v4, and Lucide icons. Live at
-[akshat-kansal.vercel.app](https://akshat-kansal.vercel.app/).
+Akshat Kansal's personal site: a product-page-style portfolio where a 3D
+model of his LLM inference engine takes itself apart as you scroll. Built with
+React 19, Vite, TypeScript, Tailwind CSS v4, three.js / React Three Fiber, and
+Lucide icons. Live at [akshat-kansal.vercel.app](https://akshat-kansal.vercel.app/).
 
 ## Quick start
 
@@ -27,30 +28,46 @@ it up automatically.
 
 ```
 src/
-  content/site.ts         ← every word and number on the site
+  content/site.ts         ← every word and number on the site, including story chapters
+  lib/story.ts            ← scroll timeline (in viewport heights) shared with the 3D scene
   components/
-    layout/               ← Header (nav + theme toggle), Footer
-    sections/             ← Hero, Work, BatchingPlayground, Experience, Writing, Toolbox, Contact
-    ui/                   ← Section (numbered layout), BarChart, BrandIcons
-  hooks/                  ← useActiveSection (nav highlight), useInView
-  lib/                    ← theme toggle, cn() class joiner
+    story/EngineStory     ← pinned scroll section: hero, captions, chapter rail
+    story/EngineScene     ← three.js scene (lazy-loaded): 1,408 instanced blocks
+    play/                 ← BatchingPlayground, QuantizeLab, SwapDemo
+    sections/             ← Hero, Play, Research, Projects, Experience, Contact
+    layout/               ← Header, Footer
+    ui/                   ← Chapter (section shell), BarChart, BrandIcons
+  hooks/                  ← useActiveSection, useInView, useReducedMotion
 ```
 
-Design tokens (colors, fonts) live in `src/index.css` under `@theme`. Light is
-the default token set and `:root[data-theme="dark"]` overrides it; Tailwind v4
-generates utilities from them (`bg-bg`, `text-muted`, `text-accent`, …).
+### How the scroll story works
+
+`EngineStory` is a tall section (`STORY_LENGTH` + 100 viewport heights) with a
+sticky, full-screen stage. One rAF-throttled scroll handler writes the scroll
+position into `story.vh` and fades captions directly through the DOM, so React
+never re-renders while scrolling. `EngineScene` reads `story.vh` every frame,
+finds the two formations it sits between in `FORMATION_KEYS`, and blends every
+block's position, scale, color, and glow in a single InstancedMesh (one draw
+call). Retune the timeline in `lib/story.ts` and the chapter ranges in
+`site.ts` together.
+
+The scene is code-split, so the text renders first. It stops rendering when the
+story is off screen, and if WebGL isn't available the page keeps working
+without it.
 
 ## Interactive pieces
 
-- **Continuous-batching simulator** (Work section): a toy scheduler with the
-  same loop shape as the real engine. It's labeled as a simulation, runs only
-  while on screen, and has a pause control.
-- **Benchmark charts**: horizontal bars with the value printed beside each
-  one, drawn from the numbers in `site.ts`.
+- **Continuous-batching simulator**: a toy scheduler with the real loop shape,
+  labeled as a simulation, with pause and slot controls.
+- **Quantize a weight matrix**: real symmetric quantization on an 8×8 matrix,
+  2–8 bits, per-row vs. one scale, with live error stats.
+- **Spot the swapped dataset**: a replay of the row-count check from the post.
+- **Project cards**: a swipeable rail with pointer-following tilt.
 - **Posts**: expand inline, and `#post-<slug>` links open a post directly.
 
 ## Accessibility
 
-Text meets 4.5:1 contrast in both themes, every control is keyboard-reachable
-with a visible focus ring, there's a skip link, and `prefers-reduced-motion`
-disables transitions and starts the simulator paused.
+Text meets 4.5:1 contrast, every control is keyboard-reachable with a visible
+focus ring, there's a skip link, and captions stay in the DOM for screen
+readers. `prefers-reduced-motion` turns off idle animation, drift, and slide-ins,
+starts the simulator paused, and keeps the story strictly scroll-driven.

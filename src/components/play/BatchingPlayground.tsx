@@ -173,7 +173,7 @@ const tail = (text: string, max: number) =>
   text.length <= max ? text : "… " + text.slice(text.length - max);
 
 const ctrlBtn =
-  "inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-line bg-bg px-3 text-xs font-medium transition-colors hover:border-faint";
+  "inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-line bg-bg px-3.5 text-xs font-medium transition-colors hover:border-faint";
 
 /**
  * A toy continuous-batching scheduler running the featured project's actual
@@ -211,19 +211,19 @@ export function BatchingPlayground() {
   ];
 
   return (
-    <div ref={ref} className="overflow-hidden rounded-lg border border-line bg-surface">
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-5 py-4">
+    <div ref={ref} className="overflow-hidden rounded-3xl border border-line bg-surface">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-5 py-5 sm:px-7">
         <div className="max-w-md">
           <p className="font-mono text-xs text-faint">Interactive · simulation</p>
-          <h4 className="mt-1 font-medium">Continuous batching, live</h4>
-          <p className="mt-1 text-sm leading-relaxed text-muted">
+          <h3 className="mt-1 text-xl font-semibold tracking-tight">Run the scheduler</h3>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted">
             Requests take a free cache slot, prefill, then decode token by token. Switch to one
             slot and watch the queue back up.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div role="group" aria-label="Cache slots" className="inline-flex h-9 items-center rounded-md border border-line bg-bg p-0.5 text-xs">
-            <span className="px-2 text-muted">Slots</span>
+          <div role="group" aria-label="Cache slots" className="inline-flex h-9 items-center rounded-full border border-line bg-bg p-0.5 text-xs">
+            <span className="px-2.5 text-muted">Slots</span>
             {([1, 4] as const).map((c) => (
               <button
                 key={c}
@@ -231,7 +231,7 @@ export function BatchingPlayground() {
                 aria-pressed={sim.capacity === c}
                 onClick={() => setSim((s) => ({ ...s, capacity: c }))}
                 className={cn(
-                  "h-full min-w-8 cursor-pointer rounded-[5px] px-2.5 font-mono font-medium transition-colors",
+                  "h-full min-w-8 cursor-pointer rounded-full px-2.5 font-mono font-medium transition-colors",
                   sim.capacity === c ? "bg-fg text-bg" : "text-muted hover:text-fg",
                 )}
               >
@@ -250,8 +250,8 @@ export function BatchingPlayground() {
         </div>
       </div>
 
-      <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <div className="min-w-0 rounded-md border border-line bg-bg p-3 font-mono text-[11px] sm:text-xs">
+      <div className="grid gap-5 p-5 sm:p-7 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        <div className="min-w-0 rounded-2xl border border-line bg-bg p-3 font-mono text-[11px] sm:text-xs">
           <p className="px-1 pb-2 text-faint">decode active → release finished → admit queued</p>
           <ul className="space-y-2">
             {Array.from({ length: SLOTS }, (_, i) => {
@@ -260,7 +260,7 @@ export function BatchingPlayground() {
               // before going offline, exactly like the real scheduler.
               const offline = i >= sim.capacity && !q;
               return (
-                <li key={i} className={cn("rounded border border-line px-2.5 py-2", offline && "opacity-50")}>
+                <li key={i} className={cn("rounded-lg border border-line px-2.5 py-2", offline && "opacity-50")}>
                   <div className="flex items-center gap-2.5">
                     <span className="text-faint">slot {i}</span>
                     {offline ? (
@@ -303,7 +303,7 @@ export function BatchingPlayground() {
         </div>
 
         <div className="flex min-w-0 flex-col gap-4">
-          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-line bg-line">
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line">
             {stats.map((s) => (
               <div key={s.label} className="flex flex-col-reverse bg-surface px-3 py-3">
                 <dt className="mt-0.5 text-xs text-muted">{s.label}</dt>
@@ -314,7 +314,7 @@ export function BatchingPlayground() {
             ))}
           </dl>
 
-          <div className="min-h-28 rounded-md border border-line bg-bg p-3">
+          <div className="min-h-28 rounded-2xl border border-line bg-bg p-3">
             <p className="font-mono text-xs text-faint">request queue</p>
             <ul className="mt-1.5 space-y-0.5 font-mono text-xs leading-6">
               {queued.length === 0 ? (
@@ -332,9 +332,9 @@ export function BatchingPlayground() {
         </div>
       </div>
 
-      <p className="border-t border-line px-5 py-3 text-xs leading-relaxed text-muted">
+      <p className="border-t border-line px-5 py-3.5 text-xs leading-relaxed text-muted sm:px-7">
         Canned tokens at illustrative speeds; no model runs in your browser. The measured numbers
-        (11.3× cached decode, 4.63× at capacity 4) are in the charts above.
+        (11.3× cached decode, 4.63× at capacity 4) are in the charts below.
       </p>
     </div>
   );

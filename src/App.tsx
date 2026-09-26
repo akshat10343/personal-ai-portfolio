@@ -1,13 +1,37 @@
+import { useEffect } from "react";
 import { Footer } from "./components/layout/Footer";
 import { Header } from "./components/layout/Header";
 import { Contact } from "./components/sections/Contact";
 import { Experience } from "./components/sections/Experience";
-import { Hero } from "./components/sections/Hero";
-import { Toolbox } from "./components/sections/Toolbox";
-import { Work } from "./components/sections/Work";
-import { Writing } from "./components/sections/Writing";
+import { Play } from "./components/sections/Play";
+import { Projects } from "./components/sections/Projects";
+import { Research } from "./components/sections/Research";
+import { EngineStory } from "./components/story/EngineStory";
+
+/** Fade `.reveal` elements up the first time they scroll into view. */
+function useReveals() {
+  useEffect(() => {
+    const root = document.documentElement;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    root.classList.add("js-ready");
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in");
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px" },
+    );
+    document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
 
 function App() {
+  useReveals();
   return (
     <>
       <a
@@ -18,11 +42,11 @@ function App() {
       </a>
       <Header />
       <main id="main">
-        <Hero />
-        <Work />
+        <EngineStory />
+        <Play />
+        <Research />
+        <Projects />
         <Experience />
-        <Writing />
-        <Toolbox />
         <Contact />
       </main>
       <Footer />

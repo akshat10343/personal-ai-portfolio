@@ -1,57 +1,75 @@
-import { useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 import { identity, navLinks } from "../../content/site";
 import { useActiveSection } from "../../hooks/useActiveSection";
-import { getTheme, toggleTheme, type Theme } from "../../lib/theme";
 import { cn } from "../../lib/utils";
 
 const sectionIds = navLinks.map((l) => l.href.slice(1));
 
 export function Header() {
   const active = useActiveSection(sectionIds);
-  const [theme, setTheme] = useState<Theme>(getTheme);
+  const [open, setOpen] = useState(false);
+
+  // Close the phone menu on Escape.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-bg/85 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
-        <a href="#top" className="font-semibold tracking-tight">
+    <header className="fixed inset-x-0 top-0 z-40 border-b border-white/[0.06] bg-black/70 backdrop-blur-xl backdrop-saturate-150">
+      <div className="mx-auto flex h-12 max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
+        <a href="#top" className="text-sm font-semibold tracking-tight" onClick={() => setOpen(false)}>
           {identity.name}
         </a>
-        <div className="flex items-center gap-1 sm:gap-2">
-          <nav aria-label="Sections" className="hidden sm:block">
-            <ul className="flex items-center gap-1">
-              {navLinks.map((l) => (
-                <li key={l.href}>
-                  <a
-                    href={l.href}
-                    aria-current={active === l.href.slice(1) ? "true" : undefined}
-                    className={cn(
-                      "rounded-md px-3 py-2 text-sm transition-colors",
-                      active === l.href.slice(1) ? "text-fg" : "text-muted hover:text-fg",
-                    )}
-                  >
-                    {l.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          <a
-            href="#contact"
-            className="rounded-md px-3 py-2 text-sm text-muted transition-colors hover:text-fg sm:hidden"
-          >
-            Contact
-          </a>
-          <button
-            type="button"
-            onClick={() => setTheme(toggleTheme())}
-            aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-muted transition-colors hover:bg-subtle hover:text-fg"
-          >
-            {theme === "dark" ? <Sun size={17} aria-hidden /> : <Moon size={17} aria-hidden />}
-          </button>
-        </div>
+        <nav aria-label="Sections" className="hidden md:block">
+          <ul className="flex items-center gap-1">
+            {navLinks.map((l) => (
+              <li key={l.href}>
+                <a
+                  href={l.href}
+                  aria-current={active === l.href.slice(1) ? "true" : undefined}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs transition-colors",
+                    active === l.href.slice(1) ? "bg-white/10 text-fg" : "text-muted hover:text-fg",
+                  )}
+                >
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls="mobile-nav"
+          aria-label={open ? "Close menu" : "Open menu"}
+          onClick={() => setOpen((o) => !o)}
+          className="-mr-2 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:text-fg md:hidden"
+        >
+          {open ? <X size={18} aria-hidden /> : <Menu size={18} aria-hidden />}
+        </button>
       </div>
+      {open && (
+        <nav id="mobile-nav" aria-label="Sections" className="border-t border-white/[0.06] md:hidden">
+          <ul className="mx-auto max-w-6xl px-5 py-3 sm:px-8">
+            {navLinks.map((l) => (
+              <li key={l.href}>
+                <a
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="block border-b border-white/[0.06] py-3.5 text-lg font-medium last:border-0"
+                >
+                  {l.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </header>
   );
 }

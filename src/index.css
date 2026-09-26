@@ -1,49 +1,39 @@
 @import "tailwindcss";
 
-/* Light is the default token set; dark overrides it below. Utilities compile
-   to var(--color-*), so swapping the variables re-themes every component.
-   Text colors are chosen for >= 4.5:1 contrast on --color-bg in both themes. */
+/* Dark, product-page palette. Text colors keep >= 4.5:1 contrast on black. */
 @theme {
-  --color-bg: #fbfbfa;
-  --color-surface: #ffffff;
-  --color-subtle: #f2f2f0;
-  --color-fg: #171716;
-  --color-muted: #5b5b58;
-  --color-faint: #6e6e6b;
-  --color-line: #e4e4e1;
-  --color-accent: #c2410c;
-  --color-on-accent: #ffffff;
-  --color-ok: #15803d;
-  --color-warn: #a16207;
+  --color-bg: #000000;
+  --color-surface: #0c0c0e;
+  --color-raised: #141416;
+  --color-subtle: #1c1c1f;
+  --color-fg: #f5f5f7;
+  --color-muted: #a1a1a6;
+  --color-faint: #86868b;
+  --color-line: #232326;
+  --color-accent: #ff9f0a;
+  --color-on-accent: #000000;
+  --color-ok: #30d158;
+  --color-warn: #ffd60a;
+  --color-cool: #64d2ff;
+  --color-violet: #bf5af2;
+  --color-hot: #ff453a;
 
   --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-:root[data-theme="dark"] {
-  --color-bg: #0f0f0e;
-  --color-surface: #161615;
-  --color-subtle: #1e1e1c;
-  --color-fg: #ededeb;
-  --color-muted: #a3a39f;
-  --color-faint: #8d8d89;
-  --color-line: #2a2a28;
-  --color-accent: #fb923c;
-  --color-on-accent: #1a0d05;
-  --color-ok: #4ade80;
-  --color-warn: #facc15;
-  color-scheme: dark;
-}
-
 @layer base {
   html {
     background-color: var(--color-bg);
-    color-scheme: light;
-    scroll-padding-top: 5rem;
+    color-scheme: dark;
+    scroll-padding-top: 4.5rem;
     -webkit-text-size-adjust: 100%;
   }
 
   body {
+    /* clip (not hidden) so the full-bleed carousel can't cause sideways
+       scroll without breaking the sticky story. */
+    overflow-x: clip;
     background-color: var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
@@ -53,14 +43,14 @@
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--color-accent) 24%, transparent);
+    background: color-mix(in oklab, var(--color-accent) 35%, transparent);
     color: var(--color-fg);
   }
 
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
-    border-radius: 2px;
+    border-radius: 3px;
   }
 
   h1,
@@ -88,17 +78,43 @@
 }
 
 @layer components {
-  /* Underlined text link: the underline sits low and picks up the accent on
-     hover, so links read as links without shouting. */
   .link {
     text-decoration-line: underline;
-    text-decoration-color: var(--color-line);
+    text-decoration-color: color-mix(in oklab, var(--color-fg) 30%, transparent);
     text-decoration-thickness: 1px;
     text-underline-offset: 4px;
     transition: text-decoration-color 150ms ease, color 150ms ease;
   }
   .link:hover {
     text-decoration-color: var(--color-accent);
+  }
+
+  /* The "engine" gradient used for hero numbers and a few headline words. */
+  .text-fire {
+    background: linear-gradient(100deg, #ffd60a 0%, #ff9f0a 45%, #ff5a36 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-ice {
+    background: linear-gradient(100deg, #9be7ff 0%, #64d2ff 45%, #bf5af2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Fade-up on first view. Content is only hidden once JS has marked the
+     page ready, so it never stays invisible if scripts fail. */
+  .js-ready .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .js-ready .reveal.is-in {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -109,4 +125,13 @@
 }
 .animate-blink {
   animation: blink 1s step-end infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4%, 3%, 0) scale(1.08);
+  }
 }

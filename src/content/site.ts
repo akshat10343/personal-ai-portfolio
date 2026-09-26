@@ -45,10 +45,59 @@ export const facts: Array<{ label: string; value: string; detail: string }> = [
 ];
 
 export const navLinks = [
-  { label: "Work", href: "#work" },
+  { label: "Engine", href: "#engine" },
+  { label: "Play", href: "#play" },
+  { label: "Research", href: "#research" },
+  { label: "Projects", href: "#projects" },
   { label: "Experience", href: "#experience" },
-  { label: "Writing", href: "#writing" },
   { label: "Contact", href: "#contact" },
+];
+
+/**
+ * The scroll story's chapters. `from`/`to` are in viewport heights scrolled
+ * into the story (see lib/story.ts); every number is from the benchmarks.
+ */
+export const storyBeats = [
+  {
+    id: "forward",
+    from: 128,
+    to: 232,
+    kicker: "01 · The forward pass",
+    title: "A 1.1B-parameter model, rebuilt by hand.",
+    body: "TinyLlama’s 22 decoder layers in raw PyTorch: RMSNorm, RoPE, grouped-query attention, SwiGLU. It loads the real checkpoint and matches Hugging Face exactly.",
+    stat: "0.0",
+    statLabel: "max logit error against the Hugging Face reference",
+  },
+  {
+    id: "cache",
+    from: 262,
+    to: 352,
+    kicker: "02 · KV cache",
+    title: "Compute each token once. Keep it.",
+    body: "A preallocated, slot-based cache with generation-stamped handles, so a freed slot can’t be read through a stale handle.",
+    stat: "11.3×",
+    statLabel: "faster decode than the uncached loop, within 3.1% of HF generate()",
+  },
+  {
+    id: "batch",
+    from: 372,
+    to: 468,
+    kicker: "03 · Continuous batching",
+    title: "Four requests. Nobody waits for the slowest.",
+    body: "Finished requests leave between decode steps and queued ones take their slot. Prefill and decode run as separate microbatches.",
+    stat: "4.63×",
+    statLabel: "the batch-1 throughput on the same 17-request workload",
+  },
+  {
+    id: "int8",
+    from: 492,
+    to: 596,
+    kicker: "04 · INT8 quantization",
+    title: "Half the size. Same answers.",
+    body: "Per-channel INT8 weights across all 155 linear layers, with 100% top-1 agreement. The unfused path decodes 83.3% slower, and the benchmarks say so.",
+    stat: "46.9%",
+    statLabel: "smaller model tensors",
+  },
 ];
 
 export type Bar = { label: string; value: number; display: string; accent?: boolean };
