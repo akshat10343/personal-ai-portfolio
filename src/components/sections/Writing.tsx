@@ -1,149 +1,71 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, X } from "lucide-react";
-import { posts } from "../../content/site";
-import type { Post } from "../../content/site";
-import { Reveal } from "../ui/Reveal";
+import { posts, type Post } from "../../content/site";
 import { Section } from "../ui/Section";
 
-function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [onClose]);
-
-  function onScroll(e: React.UIEvent<HTMLDivElement>) {
-    const el = e.currentTarget;
-    const max = el.scrollHeight - el.clientHeight;
-    setProgress(max > 0 ? el.scrollTop / max : 0);
-  }
-
+function Article({ post, open, onToggle }: { post: Post; open: boolean; onToggle: () => void }) {
+  const bodyId = `post-${post.slug}-body`;
   return (
-    <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.25 }}
-        onClick={onClose}
-        className="fixed inset-0 z-[52] bg-ink/80 backdrop-blur-md"
-      />
-      <div className="pointer-events-none fixed inset-0 z-[53] flex items-center justify-center p-4 sm:p-8">
-        <motion.div
-          layoutId={`post-${post.slug}`}
-          onScroll={onScroll}
-          className="pointer-events-auto max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-line bg-surface/[0.97] shadow-[0_40px_120px_-24px_rgba(0,0,0,0.6)] backdrop-blur-2xl"
-        >
-          {/* reading progress */}
-          <div className="sticky top-0 z-10 h-1 w-full bg-bright/[0.05]">
-            <div
-              className="h-full bg-gradient-to-r from-accent to-accent-2 transition-[width] duration-150"
-              style={{ width: `${progress * 100}%` }}
-            />
-          </div>
-          <div className="p-7 sm:p-9">
-          <div className="flex items-start justify-between gap-6">
-            <div>
-              <p className="font-mono text-xs tracking-wide text-accent-2/80 uppercase">
-                {post.date} · {post.tag}
-              </p>
-              <h3 className="mt-2 font-display text-2xl font-bold text-bright sm:text-3xl">
-                {post.title}
-              </h3>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close post"
-              className="glass shrink-0 rounded-full p-2.5 text-body transition-colors hover:border-accent/40 hover:text-bright"
-            >
-              <X size={16} />
-            </button>
-          </div>
-          <div className="mt-6 space-y-6">
-            {post.body.map((para, i) => (
-              <p
-                key={i}
-                className={
-                  i === 0
-                    ? "font-serif text-[17px] leading-8 first-letter:float-left first-letter:mr-2.5 first-letter:font-display first-letter:text-[3.3em] first-letter:leading-[0.82] first-letter:text-accent"
-                    : "font-serif text-[17px] leading-8"
-                }
-              >
-                {para}
-              </p>
-            ))}
-          </div>
-          <p className="mt-8 border-t border-line pt-5 font-mono text-xs text-body/50">
-            Written from a real project. Details generalized where they
-            involve internship work.
-          </p>
-          </div>
-        </motion.div>
-      </div>
-    </>
+    <li id={`post-${post.slug}`} className="scroll-mt-24 py-7">
+      <p className="font-mono text-xs text-faint">
+        {post.date} · {post.tag}
+      </p>
+      <h3 className="mt-1.5 text-xl font-semibold tracking-tight">{post.title}</h3>
+      <p className="mt-3 max-w-2xl leading-relaxed text-muted">{post.teaser}</p>
+
+      {open && (
+        <div id={bodyId} className="mt-6 max-w-2xl space-y-4 border-l-2 border-accent/60 pl-5 text-[16px] leading-[1.75]">
+          {post.body.map((para) => (
+            <p key={para.slice(0, 32)}>{para}</p>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={bodyId}
+        onClick={onToggle}
+        className="link mt-4 cursor-pointer text-sm font-medium"
+      >
+        {open ? "Collapse" : "Read the post"}
+      </button>
+    </li>
   );
 }
 
+/** The post named by a #post-<slug> link, so individual posts are shareable. */
+function slugFromHash() {
+  const slug = window.location.hash.replace("#post-", "");
+  return posts.some((p) => p.slug === slug) ? slug : null;
+}
+
 export function Writing() {
-  const [openSlug, setOpenSlug] = useState<string | null>(null);
-  const openPost = posts.find((p) => p.slug === openSlug);
+  const [open, setOpen] = useState<string | null>(slugFromHash);
+
+  // The post didn't exist when the browser handled the hash, so scroll to it
+  // once it has rendered open. Only on load: later toggles shouldn't jump.
+  useEffect(() => {
+    const slug = slugFromHash();
+    if (slug) document.getElementById(`post-${slug}`)?.scrollIntoView();
+  }, []);
 
   return (
     <Section
       id="writing"
-      index="05"
-      eyebrow="Writing"
-      title={
-        <>
-          Notes from the <span className="text-gradient">lab</span>, written
-          up properly.
-        </>
-      }
-      lede="Long-form write-ups of things that actually happened to me and my data. No listicles."
+      index="03"
+      title="Writing"
+      intro="Notes on evaluation and data quality from my intrusion-detection work."
     >
-      <div className="grid gap-6 md:grid-cols-2">
-        {posts.map((post, i) => (
-          <Reveal key={post.slug} delay={0.07 * (i % 2)} className="h-full">
-            <motion.article
-              layoutId={`post-${post.slug}`}
-              role="button"
-              tabIndex={0}
-              onClick={() => setOpenSlug(post.slug)}
-              onKeyDown={(e) => e.key === "Enter" && setOpenSlug(post.slug)}
-              className="glass ring-gradient group flex h-full cursor-pointer flex-col rounded-2xl p-7 transition-colors duration-300 hover:border-accent/30"
-            >
-              <p className="font-mono text-xs tracking-wide text-accent-2/80 uppercase">
-                {post.date} · {post.tag}
-              </p>
-              <h3 className="mt-3 font-display text-xl font-semibold text-bright transition-colors duration-300 group-hover:text-accent-2">
-                {post.title}
-              </h3>
-              <p className="mt-3 text-[15px] leading-relaxed">{post.teaser}</p>
-              <p className="mt-auto flex items-center gap-1.5 pt-5 font-mono text-xs text-accent-2/70">
-                read the note
-                <ArrowUpRight
-                  size={13}
-                  className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                />
-              </p>
-            </motion.article>
-          </Reveal>
+      <ul className="divide-y divide-line border-y border-line">
+        {posts.map((p) => (
+          <Article
+            key={p.slug}
+            post={p}
+            open={open === p.slug}
+            onToggle={() => setOpen((cur) => (cur === p.slug ? null : p.slug))}
+          />
         ))}
-      </div>
-
-      <AnimatePresence>
-        {openPost && (
-          <PostModal post={openPost} onClose={() => setOpenSlug(null)} />
-        )}
-      </AnimatePresence>
+      </ul>
     </Section>
   );
 }

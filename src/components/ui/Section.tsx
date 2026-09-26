@@ -1,80 +1,33 @@
-import { useRef, type ReactNode } from "react";
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
-import { cn } from "../../lib/utils";
-import { Reveal } from "./Reveal";
-import { ScrambleText } from "./ScrambleText";
-import { ScrubText } from "./ScrubText";
-
-type SectionProps = {
-  id: string;
-  /** Zero-padded index shown in the mono eyebrow, e.g. "01". */
-  index: string;
-  eyebrow: string;
-  title: ReactNode;
-  lede?: string;
-  children: ReactNode;
-  className?: string;
-};
+import type { ReactNode } from "react";
 
 /**
- * Standard page section: numbered eyebrow, display title, optional lede,
- * and a huge outlined ghost numeral that drifts on scroll (parallax).
+ * A numbered section: the label column sticks on wide screens while the
+ * content scrolls past it, like the margin of a spec sheet.
  */
 export function Section({
   id,
   index,
-  eyebrow,
   title,
-  lede,
+  intro,
   children,
-  className,
-}: SectionProps) {
-  const ref = useRef<HTMLElement>(null);
-  const reduce = useReducedMotion();
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-  const ghostY = useTransform(scrollYProgress, [0, 1], [70, -70]);
-
+}: {
+  id: string;
+  index: string;
+  title: string;
+  intro?: string;
+  children: ReactNode;
+}) {
   return (
-    <section ref={ref} id={id} className={cn("relative scroll-mt-28", className)}>
-      {/* angled seam between sections */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-0 left-1/2 h-px w-[92%] max-w-5xl -translate-x-1/2 -rotate-[0.6deg] bg-gradient-to-r from-transparent via-accent/25 to-transparent"
-      />
-      <div className="relative mx-auto max-w-6xl px-5 py-24 sm:px-8 md:py-32">
-        <motion.span
-          aria-hidden
-          style={reduce ? undefined : { y: ghostY }}
-          className="text-outline pointer-events-none absolute top-6 right-2 font-display text-[8rem] leading-none font-bold select-none sm:right-8 sm:text-[12rem]"
-        >
-          {index}
-        </motion.span>
-
-        <Reveal>
-          <p className="font-mono text-[13px] tracking-[0.2em] text-accent-2/80 uppercase">
-            <span className="text-body/50">{index} /</span>{" "}
-            <ScrambleText text={eyebrow} />
-          </p>
-          <h2 className="mt-4 max-w-2xl font-display text-3xl font-semibold tracking-tight text-bright sm:text-[2.6rem] sm:leading-[1.1]">
+    <section id={id} aria-labelledby={`${id}-title`} className="border-t border-line">
+      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-16 sm:px-8 md:grid-cols-[11rem_minmax(0,1fr)] md:gap-12 md:py-24 lg:grid-cols-[14rem_minmax(0,1fr)]">
+        <header className="md:sticky md:top-24 md:self-start">
+          <p className="font-mono text-xs text-faint tabular-nums">{index}</p>
+          <h2 id={`${id}-title`} className="mt-1.5 text-lg font-semibold tracking-tight">
             {title}
           </h2>
-          {lede && (
-            <ScrubText
-              text={lede}
-              className="mt-5 max-w-2xl text-lg leading-relaxed"
-            />
-          )}
-        </Reveal>
-        <div className="relative mt-12 md:mt-16">{children}</div>
+          {intro && <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">{intro}</p>}
+        </header>
+        <div className="min-w-0">{children}</div>
       </div>
     </section>
   );

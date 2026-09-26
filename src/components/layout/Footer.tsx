@@ -1,42 +1,23 @@
-import { Mail } from "lucide-react";
 import { identity } from "../../content/site";
-import { GithubIcon, LinkedinIcon } from "../ui/BrandIcons";
 
 export function Footer() {
   return (
     <footer className="border-t border-line">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 sm:flex-row sm:px-8">
-        <p className="font-mono text-xs text-body/80">
-          © {new Date().getFullYear()} {identity.name} · designed & built from
-          scratch with React, TypeScript, Tailwind, Framer Motion
+      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-8 text-xs text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <p>
+          © {new Date().getFullYear()} {identity.name} · {identity.location}
         </p>
-        <div className="flex items-center gap-4">
+        <p>
+          Built with React, TypeScript, and Tailwind.{" "}
           <a
-            href={identity.github}
+            href={`${identity.github}/personal-ai-portfolio`}
             target="_blank"
             rel="noreferrer"
-            aria-label="GitHub"
-            className="text-body transition-colors hover:text-bright"
+            className="link"
           >
-            <GithubIcon size={18} />
+            Source
           </a>
-          <a
-            href={identity.linkedin}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="LinkedIn"
-            className="text-body transition-colors hover:text-bright"
-          >
-            <LinkedinIcon size={18} />
-          </a>
-          <a
-            href={`mailto:${identity.email}`}
-            aria-label="Email"
-            className="text-body transition-colors hover:text-bright"
-          >
-            <Mail size={18} />
-          </a>
-        </div>
+        </p>
       </div>
     </footer>
   );

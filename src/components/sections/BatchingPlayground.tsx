@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView, useReducedMotion } from "framer-motion";
-import { Cpu, RotateCcw, TriangleAlert } from "lucide-react";
+import { Pause, Play, RotateCcw } from "lucide-react";
+import { useInView } from "../../hooks/useInView";
 import { cn } from "../../lib/utils";
-import { Odometer } from "../ui/Odometer";
-import { Reveal } from "../ui/Reveal";
 
 const TICK_MS = 230;
 const SLOTS = 4;
@@ -163,245 +161,181 @@ function step(s: Sim): Sim {
   return { ...s, tick, nextId, nextArrival, reqs, tokensOut, completed, waitTicks };
 }
 
-const phaseChip: Record<Phase, string> = {
-  queued: "text-body/40",
-  prefill: "text-amber",
-  decode: "text-mint",
-  done: "text-accent-2",
+const phaseColor: Record<Phase, string> = {
+  queued: "text-faint",
+  prefill: "text-warn",
+  decode: "text-accent",
+  done: "text-ok",
 };
 
 /** Keep the newest tokens visible once a line outgrows its slot. */
 const tail = (text: string, max: number) =>
   text.length <= max ? text : "… " + text.slice(text.length - max);
 
+const ctrlBtn =
+  "inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-line bg-bg px-3 text-xs font-medium transition-colors hover:border-faint";
+
 /**
  * A toy continuous-batching scheduler running the featured project's actual
  * loop shape: 4 KV-cache slots, dynamic admission, per-token decode. The
  * capacity toggle is the whole lesson: watch the queue back up at batch 1.
- * Tokens are canned and speeds illustrative; the banner says so.
+ * Tokens are canned and speeds illustrative; the caption says so.
  */
 export function BatchingPlayground() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { margin: "80px" });
-  const reduce = useReducedMotion();
-
+  // Moving content needs a pause control; reduced-motion visitors start paused.
+  const [running, setRunning] = useState(
+    () => !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   const [sim, setSim] = useState<Sim>(() => initialSim(4));
 
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || !running) return;
     const iv = setInterval(() => setSim(step), TICK_MS);
     return () => clearInterval(iv);
-  }, [inView]);
+  }, [inView, running]);
 
   const queued = sim.reqs.filter((q) => q.phase === "queued");
   const bySlot = (i: number) => sim.reqs.find((q) => q.slot === i) ?? null;
   const avgWaitS =
     sim.waitTicks.length === 0
       ? 0
-      : (sim.waitTicks.reduce((a, b) => a + b, 0) / sim.waitTicks.length) *
-        (TICK_MS / 1000);
+      : (sim.waitTicks.reduce((a, b) => a + b, 0) / sim.waitTicks.length) * (TICK_MS / 1000);
+
+  const stats = [
+    { label: "tokens generated", value: String(sim.tokensOut) },
+    { label: "requests served", value: String(sim.completed) },
+    { label: "avg queue wait", value: `${avgWaitS.toFixed(1)}s` },
+    { label: "waiting in queue", value: String(queued.length), hot: queued.length >= MAX_QUEUE - 1 },
+  ];
 
   return (
-    <Reveal>
-      <div
-        ref={ref}
-        className="glass ring-gradient overflow-hidden rounded-2xl p-7 md:p-8"
-      >
-        <div className="flex flex-wrap items-center gap-4">
-          <div>
-            <p className="font-mono text-xs tracking-wide text-accent-2/80">
-              DEMO / SERVING PLAYGROUND
-            </p>
-            <h3 className="mt-1.5 font-display text-xl font-semibold text-bright">
-              Watch continuous batching earn its keep
-            </h3>
+    <div ref={ref} className="overflow-hidden rounded-lg border border-line bg-surface">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-5 py-4">
+        <div className="max-w-md">
+          <p className="font-mono text-xs text-faint">Interactive · simulation</p>
+          <h4 className="mt-1 font-medium">Continuous batching, live</h4>
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            Requests take a free cache slot, prefill, then decode token by token. Switch to one
+            slot and watch the queue back up.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div role="group" aria-label="Cache slots" className="inline-flex h-9 items-center rounded-md border border-line bg-bg p-0.5 text-xs">
+            <span className="px-2 text-muted">Slots</span>
+            {([1, 4] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                aria-pressed={sim.capacity === c}
+                onClick={() => setSim((s) => ({ ...s, capacity: c }))}
+                className={cn(
+                  "h-full min-w-8 cursor-pointer rounded-[5px] px-2.5 font-mono font-medium transition-colors",
+                  sim.capacity === c ? "bg-fg text-bg" : "text-muted hover:text-fg",
+                )}
+              >
+                {c}
+              </button>
+            ))}
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber/40 bg-amber/10 px-3 py-1 font-mono text-[10px] tracking-wide text-amber uppercase">
-            <TriangleAlert size={11} />
-            simulation
-          </span>
-          <div className="ml-auto flex items-center gap-3">
-            <div className="glass flex items-center gap-1 rounded-full p-1 font-mono text-xs">
-              <span className="hidden px-2 text-body/60 sm:inline">
-                cache slots
-              </span>
-              {([1, 4] as const).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  aria-pressed={sim.capacity === c}
-                  onClick={() =>
-                    setSim((s) => ({ ...s, capacity: c }))
-                  }
-                  className={cn(
-                    "rounded-full px-3 py-1.5 font-semibold transition-colors",
-                    sim.capacity === c
-                      ? "bg-gradient-to-r from-accent to-accent-2 text-ink"
-                      : "text-body hover:text-bright",
-                  )}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => setSim(initialSim(sim.capacity))}
-              aria-label="Reset simulation"
-              className="glass inline-flex items-center gap-2 rounded-full px-4 py-2 font-display text-xs font-semibold text-bright transition-colors hover:border-accent/40"
-            >
-              <RotateCcw size={13} />
-              Reset
-            </button>
-          </div>
+          <button type="button" onClick={() => setRunning((r) => !r)} className={ctrlBtn}>
+            {running ? <Pause size={13} aria-hidden /> : <Play size={13} aria-hidden />}
+            {running ? "Pause" : "Run"}
+          </button>
+          <button type="button" onClick={() => setSim(initialSim(sim.capacity))} className={ctrlBtn}>
+            <RotateCcw size={13} aria-hidden />
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        <div className="min-w-0 rounded-md border border-line bg-bg p-3 font-mono text-[11px] sm:text-xs">
+          <p className="px-1 pb-2 text-faint">decode active → release finished → admit queued</p>
+          <ul className="space-y-2">
+            {Array.from({ length: SLOTS }, (_, i) => {
+              const q = bySlot(i);
+              // A slot beyond capacity still drains its in-flight request
+              // before going offline, exactly like the real scheduler.
+              const offline = i >= sim.capacity && !q;
+              return (
+                <li key={i} className={cn("rounded border border-line px-2.5 py-2", offline && "opacity-50")}>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-faint">slot {i}</span>
+                    {offline ? (
+                      <span className="text-faint">offline</span>
+                    ) : q ? (
+                      <>
+                        <span className="text-muted">req #{q.id}</span>
+                        <span className={phaseColor[q.phase]}>{q.phase}</span>
+                      </>
+                    ) : (
+                      <span className="text-faint">idle</span>
+                    )}
+                  </div>
+                  <div className="mt-1 h-5 overflow-hidden leading-5 whitespace-nowrap">
+                    {q && !offline ? (
+                      q.phase === "prefill" ? (
+                        <span className="text-warn">
+                          {q.prompt} {"█".repeat(PREFILL_TICKS - q.prefillLeft)}
+                          {"░".repeat(q.prefillLeft)}
+                        </span>
+                      ) : q.phase === "done" ? (
+                        <span className="text-muted">
+                          <span className="text-ok">✓ </span>
+                          {q.tokens.join(" ")}
+                        </span>
+                      ) : (
+                        <span className="text-muted">
+                          {tail(q.prompt + " → " + q.tokens.slice(0, q.emitted).join(" "), 84)}
+                          <span className="animate-blink text-accent">▊</span>
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-faint">·</span>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
-          {/* cache slots */}
-          <div className="dark-island min-w-0 rounded-xl border border-line bg-ink/60 p-4 font-mono text-[11px] sm:text-xs">
-            <p className="mb-3 flex items-center gap-2 text-body/40">
-              <Cpu size={12} />
-              scheduler: decode active → release finished → admit queued
-            </p>
-            <div className="space-y-3">
-              {Array.from({ length: SLOTS }, (_, i) => {
-                const q = bySlot(i);
-                // A slot beyond capacity still drains its in-flight request
-                // before going offline, exactly like the real scheduler.
-                const offline = i >= sim.capacity && !q;
-                return (
-                  <div
-                    key={i}
-                    className={cn(
-                      "rounded-lg border border-line/60 px-3 py-2.5",
-                      offline && "opacity-40",
-                    )}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-body/40">slot {i}</span>
-                      {offline ? (
-                        <span className="text-body/40">
-                          offline · capacity {sim.capacity}
-                        </span>
-                      ) : q ? (
-                        <>
-                          <span className="text-body/60">req #{q.id}</span>
-                          <span className={phaseChip[q.phase]}>{q.phase}</span>
-                        </>
-                      ) : (
-                        <span className="text-body/40">idle</span>
-                      )}
-                    </div>
-                    <div className="mt-1 h-5 overflow-hidden leading-5 whitespace-nowrap">
-                      {q && !offline ? (
-                        q.phase === "prefill" ? (
-                          <span className="text-amber/80">
-                            {q.prompt}{" "}
-                            {"█".repeat(PREFILL_TICKS - q.prefillLeft)}
-                            {"░".repeat(q.prefillLeft)}
-                          </span>
-                        ) : q.phase === "done" ? (
-                          <span className="text-body/70">
-                            <span className="text-accent-2">✓ </span>
-                            {q.tokens.join(" ")}
-                          </span>
-                        ) : (
-                          <span className="text-body/70">
-                            {tail(
-                              q.prompt + " → " + q.tokens.slice(0, q.emitted).join(" "),
-                              84,
-                            )}
-                            <span className="animate-blink text-mint">▊</span>
-                          </span>
-                        )
-                      ) : (
-                        <span className="text-body/30">·</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        <div className="flex min-w-0 flex-col gap-4">
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-line bg-line">
+            {stats.map((s) => (
+              <div key={s.label} className="flex flex-col-reverse bg-surface px-3 py-3">
+                <dt className="mt-0.5 text-xs text-muted">{s.label}</dt>
+                <dd className={cn("font-mono text-xl font-medium tabular-nums", s.hot && "text-warn")}>
+                  {s.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
 
-          {/* right column: stats + queue */}
-          <div className="flex min-w-0 flex-col gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="glass rounded-xl px-3 py-4 text-center">
-                <p className="font-display text-xl font-bold text-accent">
-                  <Odometer value={String(sim.tokensOut)} />
-                </p>
-                <p className="mt-1 font-mono text-[10px] tracking-wide text-body/60 uppercase">
-                  tokens generated
-                </p>
-              </div>
-              <div className="glass rounded-xl px-3 py-4 text-center">
-                <p className="font-display text-xl font-bold text-accent">
-                  <Odometer value={String(sim.completed)} />
-                </p>
-                <p className="mt-1 font-mono text-[10px] tracking-wide text-body/60 uppercase">
-                  requests served
-                </p>
-              </div>
-              <div className="glass rounded-xl px-3 py-4 text-center">
-                <p className="font-display text-xl font-bold text-accent">
-                  {avgWaitS.toFixed(1)}s
-                </p>
-                <p className="mt-1 font-mono text-[10px] tracking-wide text-body/60 uppercase">
-                  avg queue wait
-                </p>
-              </div>
-              <div className="glass rounded-xl px-3 py-4 text-center">
-                <p
-                  className={cn(
-                    "font-display text-xl font-bold",
-                    queued.length >= MAX_QUEUE - 1
-                      ? "text-red-400/90"
-                      : "text-accent",
-                  )}
-                >
-                  <Odometer value={String(queued.length)} />
-                </p>
-                <p className="mt-1 font-mono text-[10px] tracking-wide text-body/60 uppercase">
-                  waiting in queue
-                </p>
-              </div>
-            </div>
-
-            <div className="dark-island min-h-32 rounded-xl border border-line p-4">
-              <p className="font-mono text-[10px] tracking-[0.18em] text-accent-2/80 uppercase">
-                request queue
-              </p>
-              <div className="mt-2 space-y-1 font-mono text-xs leading-6">
-                {queued.length === 0 ? (
-                  <p className="text-body/40">
-                    queue clear: every request has a slot
-                  </p>
-                ) : (
-                  queued.map((q) => (
-                    <motion.p
-                      key={q.id}
-                      initial={reduce ? false : { opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="truncate text-body/70"
-                    >
-                      <span className="mr-2 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-amber align-middle" />
-                      #{q.id} · {q.prompt}
-                    </motion.p>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <p className="mt-auto font-mono text-[11px] leading-relaxed text-body/50">
-              Canned tokens at illustrative speeds; no model runs in your
-              browser. The measured engine (11.3× cached decode, 4.63× at
-              capacity 4) is in the case study above. Try switching to 1 slot
-              and watch the queue back up.
-            </p>
+          <div className="min-h-28 rounded-md border border-line bg-bg p-3">
+            <p className="font-mono text-xs text-faint">request queue</p>
+            <ul className="mt-1.5 space-y-0.5 font-mono text-xs leading-6">
+              {queued.length === 0 ? (
+                <li className="text-muted">clear: every request has a slot</li>
+              ) : (
+                queued.map((q) => (
+                  <li key={q.id} className="truncate text-muted">
+                    <span aria-hidden className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-warn align-middle" />
+                    #{q.id} · {q.prompt}
+                  </li>
+                ))
+              )}
+            </ul>
           </div>
         </div>
       </div>
-    </Reveal>
+
+      <p className="border-t border-line px-5 py-3 text-xs leading-relaxed text-muted">
+        Canned tokens at illustrative speeds; no model runs in your browser. The measured numbers
+        (11.3× cached decode, 4.63× at capacity 4) are in the charts above.
+      </p>
+    </div>
   );
 }
