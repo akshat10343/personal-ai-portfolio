@@ -3,65 +3,74 @@ import { featured } from "../../content/site";
 import { BatchingPlayground } from "../play/BatchingPlayground";
 import { QuantizeLab } from "../play/QuantizeLab";
 import { BarChart } from "../ui/BarChart";
-import { Chapter } from "../ui/Chapter";
+import { StageChapter } from "../ui/StageChapter";
 
 /** Hands-on demos of the engine's ideas, then the measured numbers. */
 export function Play() {
   const d = featured.details!;
   return (
-    <Chapter
-      id="play"
-      eyebrow="Hands on"
-      title={
-        <>
-          Now <span className="text-fire">you</span> drive.
-        </>
-      }
-      sub="Two small, honest simulations of what the engine does. Nothing here runs a model in your browser, but the scheduling and the rounding math are the real thing."
-    >
-      <div className="space-y-6">
-        <div className="reveal">
-          <BatchingPlayground />
-        </div>
-        <div className="reveal">
-          <QuantizeLab />
-        </div>
+    <>
+      <StageChapter
+        id="play"
+        shape={5}
+        eyebrow="05 · Now you drive"
+        title={
+          <>
+            Run the scheduler <span className="text-fire">yourself.</span>
+          </>
+        }
+        sub="The blocks are this simulator’s four cache slots, live. Switch to one slot and watch the queue back up while three rows go dark."
+      >
+        <BatchingPlayground />
+      </StageChapter>
 
-        <div className="reveal rounded-3xl border border-line bg-surface p-5 sm:p-7">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="font-mono text-xs text-faint">The receipts</p>
-              <h3 className="mt-1 text-xl font-semibold tracking-tight">Measured, not simulated</h3>
-            </div>
-            <a
-              href={featured.href}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-fg px-4 text-xs font-medium text-bg transition-transform hover:scale-[1.03]"
-            >
-              Source on GitHub
-              <ArrowUpRight size={14} aria-hidden />
-            </a>
-          </div>
-          <div className="mt-7 grid gap-9 xl:grid-cols-2 xl:gap-x-12">
+      <StageChapter
+        shape={6}
+        eyebrow="06 · Round it yourself"
+        title="Quantize a weight matrix."
+        sub="Real symmetric quantization on an 8×8 matrix, drawn as 3D bars. Drop the bit width and the red, the value rounding threw away, grows. One scale for the whole matrix is worse than one per row, which is why the engine scales per channel."
+      >
+        <QuantizeLab />
+      </StageChapter>
+
+      <StageChapter
+        shape={14}
+        eyebrow="07 · The receipts"
+        title="Measured, not simulated."
+        sub="The towers are decode throughput by stage, in tokens per second on an Apple M2 CPU. The orange one is the KV cache."
+      >
+        <div className="rounded-3xl border border-line bg-surface/90 p-5 backdrop-blur-md sm:p-6">
+          <div className="space-y-8">
             {featured.charts.map((c) => (
               <BarChart key={c.title} chart={c} />
             ))}
           </div>
-          <p className="mt-7 border-t border-line pt-4 font-mono text-xs text-faint">{featured.note}</p>
+          <p className="mt-6 border-t border-line pt-4 font-mono text-xs text-faint">{featured.note}</p>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <a
+              href={featured.href}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-fg px-4 text-sm font-medium text-bg transition-transform hover:scale-[1.03]"
+            >
+              Source on GitHub
+              <ArrowUpRight size={14} aria-hidden />
+            </a>
+            <p className="font-mono text-xs text-faint">{featured.tech.join(" · ")}</p>
+          </div>
 
           <details className="group mt-5 rounded-2xl border border-line bg-bg">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-5 py-4 text-sm font-medium transition-colors hover:bg-subtle [&::-webkit-details-marker]:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-4 py-3.5 text-sm font-medium transition-colors hover:bg-subtle [&::-webkit-details-marker]:hidden">
               Engineering notes: how each piece works
               <Plus size={16} aria-hidden className="shrink-0 text-muted transition-transform group-open:rotate-45" />
             </summary>
-            <div className="space-y-5 border-t border-line px-5 py-5 text-[15px] leading-relaxed">
+            <div className="space-y-5 border-t border-line px-4 py-5 text-[15px] leading-relaxed">
               <div>
-                <h4 className="font-mono text-xs text-faint">Why build it</h4>
+                <h3 className="font-mono text-xs text-faint">Why build it</h3>
                 <p className="mt-1.5 text-muted">{d.problem}</p>
               </div>
               <div>
-                <h4 className="font-mono text-xs text-faint">How it works</h4>
+                <h3 className="font-mono text-xs text-faint">How it works</h3>
                 <ul className="mt-1.5 space-y-2.5 text-muted">
                   {d.approach.map((a) => (
                     <li key={a} className="grid grid-cols-[1rem_minmax(0,1fr)]">
@@ -72,13 +81,13 @@ export function Play() {
                 </ul>
               </div>
               <div>
-                <h4 className="font-mono text-xs text-faint">What I took away</h4>
+                <h3 className="font-mono text-xs text-faint">What I took away</h3>
                 <p className="mt-1.5 text-muted">{d.learned}</p>
               </div>
             </div>
           </details>
         </div>
-      </div>
-    </Chapter>
+      </StageChapter>
+    </>
   );
 }

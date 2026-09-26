@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, FileSpreadsheet, Lock, RotateCcw, X } from "lucide-react";
+import { live } from "../../lib/live";
 import { cn } from "../../lib/utils";
 
 /**
@@ -23,11 +24,14 @@ const STEPS = [
 export function SwapDemo() {
   const [step, setStep] = useState(0);
   const swapped = step >= 2;
+  useEffect(() => {
+    live.swap = step;
+  }, [step]);
 
   return (
-    <div className="rounded-3xl border border-line bg-surface p-5 sm:p-7">
+    <div className="rounded-3xl border border-line bg-surface/90 p-5 backdrop-blur-md">
       <p className="font-mono text-xs text-faint">Interactive · replay</p>
-      <h3 className="mt-1 text-xl font-semibold tracking-tight">Spot the swapped dataset</h3>
+      <h3 className="mt-1 text-lg font-semibold tracking-tight">Spot the swapped dataset</h3>
 
       <ol className="mt-4 flex gap-1.5" aria-label="Progress">
         {STEPS.slice(0, 3).map((_, i) => (

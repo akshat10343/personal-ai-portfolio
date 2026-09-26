@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play, RotateCcw } from "lucide-react";
 import { useInView } from "../../hooks/useInView";
+import { live } from "../../lib/live";
 import { cn } from "../../lib/utils";
 
 const TICK_MS = 230;
@@ -179,7 +180,8 @@ const ctrlBtn =
  * A toy continuous-batching scheduler running the featured project's actual
  * loop shape: 4 KV-cache slots, dynamic admission, per-token decode. The
  * capacity toggle is the whole lesson: watch the queue back up at batch 1.
- * Tokens are canned and speeds illustrative; the caption says so.
+ * Its state is mirrored live by the 3D stage. Tokens are canned and speeds
+ * illustrative; the footnote says so.
  */
 export function BatchingPlayground() {
   const ref = useRef<HTMLDivElement>(null);
@@ -196,6 +198,19 @@ export function BatchingPlayground() {
     return () => clearInterval(iv);
   }, [inView, running]);
 
+  // Publish the slots for the 3D wall to mirror.
+  useEffect(() => {
+    live.batch = {
+      capacity: sim.capacity,
+      slots: Array.from({ length: SLOTS }, (_, i) => {
+        const q = sim.reqs.find((r) => r.slot === i);
+        return q
+          ? { id: q.id, phase: q.phase, pre: 1 - q.prefillLeft / PREFILL_TICKS, gen: q.emitted / q.tokens.length }
+          : null;
+      }),
+    };
+  }, [sim]);
+
   const queued = sim.reqs.filter((q) => q.phase === "queued");
   const bySlot = (i: number) => sim.reqs.find((q) => q.slot === i) ?? null;
   const avgWaitS =
@@ -204,23 +219,16 @@ export function BatchingPlayground() {
       : (sim.waitTicks.reduce((a, b) => a + b, 0) / sim.waitTicks.length) * (TICK_MS / 1000);
 
   const stats = [
-    { label: "tokens generated", value: String(sim.tokensOut) },
-    { label: "requests served", value: String(sim.completed) },
-    { label: "avg queue wait", value: `${avgWaitS.toFixed(1)}s` },
-    { label: "waiting in queue", value: String(queued.length), hot: queued.length >= MAX_QUEUE - 1 },
+    { label: "tokens out", value: String(sim.tokensOut) },
+    { label: "served", value: String(sim.completed) },
+    { label: "avg wait", value: `${avgWaitS.toFixed(1)}s` },
+    { label: "in queue", value: String(queued.length), hot: queued.length >= MAX_QUEUE - 1 },
   ];
 
   return (
-    <div ref={ref} className="overflow-hidden rounded-3xl border border-line bg-surface">
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-5 py-5 sm:px-7">
-        <div className="max-w-md">
-          <p className="font-mono text-xs text-faint">Interactive · simulation</p>
-          <h3 className="mt-1 text-xl font-semibold tracking-tight">Run the scheduler</h3>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted">
-            Requests take a free cache slot, prefill, then decode token by token. Switch to one
-            slot and watch the queue back up.
-          </p>
-        </div>
+    <div ref={ref} className="overflow-hidden rounded-3xl border border-line bg-surface/90 backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
+        <p className="font-mono text-xs text-faint">Interactive · simulation</p>
         <div className="flex flex-wrap items-center gap-2">
           <div role="group" aria-label="Cache slots" className="inline-flex h-9 items-center rounded-full border border-line bg-bg p-0.5 text-xs">
             <span className="px-2.5 text-muted">Slots</span>
@@ -250,8 +258,8 @@ export function BatchingPlayground() {
         </div>
       </div>
 
-      <div className="grid gap-5 p-5 sm:p-7 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <div className="min-w-0 rounded-2xl border border-line bg-bg p-3 font-mono text-[11px] sm:text-xs">
+      <div className="space-y-4 p-4 sm:p-5">
+        <div className="rounded-2xl border border-line bg-bg p-3 font-mono text-[11px] sm:text-xs">
           <p className="px-1 pb-2 text-faint">decode active → release finished → admit queued</p>
           <ul className="space-y-2">
             {Array.from({ length: SLOTS }, (_, i) => {
@@ -288,7 +296,7 @@ export function BatchingPlayground() {
                         </span>
                       ) : (
                         <span className="text-muted">
-                          {tail(q.prompt + " → " + q.tokens.slice(0, q.emitted).join(" "), 84)}
+                          {tail(q.prompt + " → " + q.tokens.slice(0, q.emitted).join(" "), 60)}
                           <span className="animate-blink text-accent">▊</span>
                         </span>
                       )
@@ -302,39 +310,24 @@ export function BatchingPlayground() {
           </ul>
         </div>
 
-        <div className="flex min-w-0 flex-col gap-4">
-          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line">
-            {stats.map((s) => (
-              <div key={s.label} className="flex flex-col-reverse bg-surface px-3 py-3">
-                <dt className="mt-0.5 text-xs text-muted">{s.label}</dt>
-                <dd className={cn("font-mono text-xl font-medium tabular-nums", s.hot && "text-warn")}>
-                  {s.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
+        <dl className="grid grid-cols-4 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+          {stats.map((s) => (
+            <div key={s.label} className="flex flex-col-reverse bg-bg px-3 py-2.5">
+              <dt className="mt-0.5 text-[11px] text-muted">{s.label}</dt>
+              <dd className={cn("font-mono text-lg font-medium tabular-nums", s.hot && "text-warn")}>{s.value}</dd>
+            </div>
+          ))}
+        </dl>
 
-          <div className="min-h-28 rounded-2xl border border-line bg-bg p-3">
-            <p className="font-mono text-xs text-faint">request queue</p>
-            <ul className="mt-1.5 space-y-0.5 font-mono text-xs leading-6">
-              {queued.length === 0 ? (
-                <li className="text-muted">clear: every request has a slot</li>
-              ) : (
-                queued.map((q) => (
-                  <li key={q.id} className="truncate text-muted">
-                    <span aria-hidden className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-warn align-middle" />
-                    #{q.id} · {q.prompt}
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        </div>
+        <p className="truncate font-mono text-xs text-muted">
+          <span className="text-faint">queue › </span>
+          {queued.length === 0 ? "clear, every request has a slot" : queued.map((q) => `#${q.id}`).join("  ")}
+        </p>
       </div>
 
-      <p className="border-t border-line px-5 py-3.5 text-xs leading-relaxed text-muted sm:px-7">
-        Canned tokens at illustrative speeds; no model runs in your browser. The measured numbers
-        (11.3× cached decode, 4.63× at capacity 4) are in the charts below.
+      <p className="border-t border-line px-5 py-3 text-xs leading-relaxed text-muted">
+        Canned tokens at illustrative speeds; no model runs in your browser. The measured numbers are
+        in the story above.
       </p>
     </div>
   );

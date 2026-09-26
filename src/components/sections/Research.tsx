@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { experience, posts, type Post } from "../../content/site";
 import { SwapDemo } from "../play/SwapDemo";
-import { Chapter } from "../ui/Chapter";
+import { StageChapter } from "../ui/StageChapter";
 
 /** The post named by a #post-<slug> link, so individual posts are shareable. */
 function slugFromHash() {
@@ -13,14 +13,14 @@ function slugFromHash() {
 function PostCard({ post, open, onToggle }: { post: Post; open: boolean; onToggle: () => void }) {
   const bodyId = `post-${post.slug}-body`;
   return (
-    <article id={`post-${post.slug}`} className="reveal scroll-mt-24 rounded-3xl border border-line bg-surface p-6 sm:p-8">
+    <article id={`post-${post.slug}`} className="scroll-mt-24 rounded-3xl border border-line bg-surface/90 p-6 backdrop-blur-md">
       <p className="font-mono text-xs text-faint">
         {post.date} · {post.tag}
       </p>
-      <h3 className="mt-2 text-2xl font-semibold tracking-tight">{post.title}</h3>
-      <p className="mt-3 max-w-2xl leading-relaxed text-muted">{post.teaser}</p>
+      <h3 className="mt-2 text-xl font-semibold tracking-tight">{post.title}</h3>
+      <p className="mt-3 leading-relaxed text-muted">{post.teaser}</p>
       {open && (
-        <div id={bodyId} className="mt-6 max-w-2xl space-y-4 border-l-2 border-accent/70 pl-5 text-[16px] leading-[1.75] text-fg/90">
+        <div id={bodyId} className="mt-6 space-y-4 border-l-2 border-accent/70 pl-5 text-[16px] leading-[1.75] text-fg/90">
           {post.body.map((para) => (
             <p key={para.slice(0, 32)}>{para}</p>
           ))}
@@ -52,54 +52,49 @@ export function Research() {
   }, []);
 
   return (
-    <Chapter
-      id="research"
-      eyebrow="Research · Nokia Bell Labs"
-      title={
-        <>
-          Before the model, <span className="text-ice">the data.</span>
-        </>
-      }
-      sub="This summer I worked on machine learning for network intrusion detection. Most of the real work was making sure the benchmarks weren’t lying."
-      className="border-t border-line"
-    >
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="reveal flex flex-col justify-between rounded-3xl border border-line bg-surface p-6 sm:p-8">
-          <div>
-            <p className="font-mono text-xs text-faint">{role.period}</p>
-            <h3 className="mt-2 text-2xl font-semibold tracking-tight">{role.role}</h3>
-            <p className="text-muted">{role.org}</p>
-            <p className="mt-5 leading-relaxed">{role.points[0]}</p>
-          </div>
-          <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-line pt-6">
-            {[
-              ["2", "benchmarks audited for leakage"],
-              ["3", "model families, one frozen protocol"],
-              ["0.995", "best PR-AUC"],
-            ].map(([v, k]) => (
-              <div key={k} className="flex flex-col-reverse">
-                <dt className="mt-1 text-xs leading-snug text-muted">{k}</dt>
-                <dd className="text-ice text-3xl font-semibold tracking-tight tabular-nums">{v}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-        <div className="reveal">
-          <SwapDemo />
-        </div>
-      </div>
+    <>
+      <StageChapter
+        id="research"
+        shape={7}
+        eyebrow="08 · Research · Nokia Bell Labs"
+        title={
+          <>
+            Before the model, <span className="text-ice">the data.</span>
+          </>
+        }
+        sub={
+          <>
+            <p>
+              {role.role}, {role.period}. {role.points[0]}
+            </p>
+            <p className="mt-3">
+              The two piles of blocks are the files from a popular benchmark mirror, sized by row count. Click
+              through and find what was wrong with them.
+            </p>
+          </>
+        }
+      >
+        <SwapDemo />
+      </StageChapter>
 
-      <h3 className="reveal mt-20 text-center text-2xl font-semibold tracking-tight">Writing</h3>
-      <div className="mt-8 space-y-6">
-        {posts.map((p) => (
-          <PostCard
-            key={p.slug}
-            post={p}
-            open={open === p.slug}
-            onToggle={() => setOpen((cur) => (cur === p.slug ? null : p.slug))}
-          />
-        ))}
-      </div>
-    </Chapter>
+      <StageChapter
+        id="writing"
+        shape={7}
+        eyebrow="Writing"
+        title="Notes from the research."
+        sub="Two short posts on keeping evaluation honest."
+      >
+        <div className="space-y-5">
+          {posts.map((p) => (
+            <PostCard
+              key={p.slug}
+              post={p}
+              open={open === p.slug}
+              onToggle={() => setOpen((cur) => (cur === p.slug ? null : p.slug))}
+            />
+          ))}
+        </div>
+      </StageChapter>
+    </>
   );
 }

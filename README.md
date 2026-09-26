@@ -29,40 +29,51 @@ it up automatically.
 ```
 src/
   content/site.ts         ← every word and number on the site, including story chapters
-  lib/story.ts            ← scroll timeline (in viewport heights) shared with the 3D scene
+  lib/story.ts            ← scroll timeline + shape list shared with the 3D scene
+  lib/live.ts             ← state the interactive demos publish for the 3D to mirror
   components/
-    story/EngineStory     ← pinned scroll section: hero, captions, chapter rail
-    story/EngineScene     ← three.js scene (lazy-loaded): 1,408 instanced blocks
+    story/Stage           ← fixed 3D layer behind the whole page; measures chapters
+    story/EngineScene     ← three.js scene (lazy-loaded): 1,408 instanced blocks, 15 shapes
+    story/EngineStory     ← the pinned opening story: hero, captions, chapter rail
     play/                 ← BatchingPlayground, QuantizeLab, SwapDemo
     sections/             ← Hero, Play, Research, Projects, Experience, Contact
+    ui/StageChapter       ← a chapter after the story: content left, `shape` for the 3D
     layout/               ← Header, Footer
-    ui/                   ← Chapter (section shell), BarChart, BrandIcons
   hooks/                  ← useActiveSection, useInView, useReducedMotion
 ```
 
-### How the scroll story works
+### How the 3D stage works
 
-`EngineStory` is a tall section (`STORY_LENGTH` + 100 viewport heights) with a
-sticky, full-screen stage. One rAF-throttled scroll handler writes the scroll
-position into `story.vh` and fades captions directly through the DOM, so React
-never re-renders while scrolling. `EngineScene` reads `story.vh` every frame,
-finds the two formations it sits between in `FORMATION_KEYS`, and blends every
-block's position, scale, color, and glow in a single InstancedMesh (one draw
-call). Retune the timeline in `lib/story.ts` and the chapter ranges in
-`site.ts` together.
+One fixed canvas sits behind the whole page. The opening story is a tall
+pinned section with fixed keyframes (in viewport heights, `lib/story.ts`).
+After it, every element with `data-shape` is a chapter: `measureTimeline()`
+turns each one's position into keyframes, so the model morphs to that
+chapter's shape as it crosses the middle of the screen. It re-measures on
+resize, font load, and any layout change (like a post expanding), so adding or
+reordering chapters needs no timeline edits.
 
-The scene is code-split, so the text renders first. It stops rendering when the
-story is off screen, and if WebGL isn't available the page keeps working
-without it.
+Every frame, `EngineScene` finds the two shapes it sits between, blends every
+block's position, scale, color, and glow in one InstancedMesh (one draw call),
+and eases each block toward its target so live changes glide.
+
+Three shapes are live: the scheduler wall mirrors `BatchingPlayground`, the
+3D bar chart mirrors `QuantizeLab`, and the two piles mirror `SwapDemo`. Each
+demo writes its state into `lib/live.ts`, and the scene reads it every frame.
+
+The scene is code-split, so the text renders first, and if WebGL isn't
+available the page keeps working without it.
 
 ## Interactive pieces
 
 - **Continuous-batching simulator**: a toy scheduler with the real loop shape,
-  labeled as a simulation, with pause and slot controls.
+  labeled as a simulation, with pause and slot controls; the 3D wall is its
+  four cache slots.
 - **Quantize a weight matrix**: real symmetric quantization on an 8×8 matrix,
-  2–8 bits, per-row vs. one scale, with live error stats.
-- **Spot the swapped dataset**: a replay of the row-count check from the post.
-- **Project cards**: a swipeable rail with pointer-following tilt.
+  2–8 bits, per-row vs. one scale, with live error stats; the 3D bars show
+  kept vs. lost value.
+- **Spot the swapped dataset**: a replay of the row-count check from the post;
+  the 3D piles swap and get pinned.
+- **Projects**: one chapter each, with the model forming each project's icon.
 - **Posts**: expand inline, and `#post-<slug>` links open a post directly.
 
 ## Accessibility

@@ -7,6 +7,7 @@ import { Play } from "./components/sections/Play";
 import { Projects } from "./components/sections/Projects";
 import { Research } from "./components/sections/Research";
 import { EngineStory } from "./components/story/EngineStory";
+import { Stage } from "./components/story/Stage";
 
 /** Fade `.reveal` elements up the first time they scroll into view. */
 function useReveals() {
@@ -41,7 +42,8 @@ function App() {
         Skip to content
       </a>
       <Header />
-      <main id="main">
+      <Stage />
+      <main id="main" className="relative z-10">
         <EngineStory />
         <Play />
         <Research />
@@ -49,7 +51,9 @@ function App() {
         <Experience />
         <Contact />
       </main>
-      <Footer />
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </>
   );
 }

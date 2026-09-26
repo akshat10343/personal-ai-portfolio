@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Shuffle } from "lucide-react";
+import { live } from "../../lib/live";
 import { cn } from "../../lib/utils";
 
 const SIZE = 8;
@@ -53,7 +54,8 @@ function cellColor(v: number, max: number) {
 
 /**
  * Real quantization math on a toy 8×8 weight matrix: the same symmetric,
- * per-channel scheme the engine uses, at whatever bit width you pick.
+ * per-channel scheme the engine uses, at whatever bit width you pick. The 3D
+ * stage draws the same matrix as bars and mirrors every change.
  */
 export function QuantizeLab() {
   const [seed, setSeed] = useState(7);
@@ -67,26 +69,22 @@ export function QuantizeLab() {
   const flat = w.flat();
   const maxAbs = Math.max(...flat.map(Math.abs));
   const errs = w.flatMap((row, r) => row.map((x, c) => Math.abs(x - q[r][c].deq)));
-  const maxErr = Math.max(...errs);
   const meanErr = errs.reduce((a, b) => a + b, 0) / errs.length;
   const norm = Math.sqrt(flat.reduce((a, x) => a + x * x, 0));
   const relErr = Math.sqrt(errs.reduce((a, e) => a + e * e, 0)) / norm;
   const levels = 2 ** bits - 1;
 
+  useEffect(() => {
+    live.quant = { w, deq: q.map((row) => row.map((x) => x.deq)), maxAbs, hover };
+  }, [w, q, maxAbs, hover]);
+
   const [hr, hc] = hover ?? [0, 0];
   const cell = q[hr][hc];
 
   return (
-    <div className="rounded-3xl border border-line bg-surface p-5 sm:p-7">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="max-w-md">
-          <p className="font-mono text-xs text-faint">Interactive · real math</p>
-          <h3 className="mt-1 text-xl font-semibold tracking-tight">Quantize a weight matrix</h3>
-          <p className="mt-1.5 text-sm leading-relaxed text-muted">
-            Drag the bit width down and watch the rounding error grow. Switch to one scale for the
-            whole matrix to see why the engine scales each row separately.
-          </p>
-        </div>
+    <div className="rounded-3xl border border-line bg-surface/90 p-5 backdrop-blur-md">
+      <div className="flex items-center justify-between gap-3">
+        <p className="font-mono text-xs text-faint">Interactive · real math</p>
         <button
           type="button"
           onClick={() => setSeed((s) => s + 1)}
@@ -97,51 +95,36 @@ export function QuantizeLab() {
         </button>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[27rem_minmax(0,1fr)] lg:items-start lg:gap-10">
-        <div className="grid grid-cols-2 gap-4" onMouseLeave={() => setHover(null)}>
-          {(["Dequantized weights", "Error |w − ŵ|"] as const).map((label, g) => (
-            <figure key={label}>
-              <figcaption className="mb-2 font-mono text-[11px] text-faint">{label}</figcaption>
-              <div
-                className="grid aspect-square w-full gap-[3px]"
-                style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}
-              >
-                {q.map((row, r) =>
-                  row.map((x, c) => {
-                    const err = Math.abs(w[r][c] - x.deq);
-                    const on = hover && hover[0] === r && hover[1] === c;
-                    return (
-                      <div
-                        key={`${r}-${c}`}
-                        onMouseEnter={() => setHover([r, c])}
-                        className={cn(
-                          "rounded-[3px] transition-[background-color] duration-300",
-                          on && "ring-2 ring-fg",
-                        )}
-                        style={{
-                          background:
-                            g === 0
-                              ? cellColor(x.deq, maxAbs)
-                              : `color-mix(in oklab, var(--color-hot) ${Math.round(
-                                  Math.min(1, err / Math.max(maxErr, 1e-6)) * 90,
-                                )}%, #111114)`,
-                        }}
-                      />
-                    );
-                  }),
-                )}
-              </div>
-            </figure>
-          ))}
-        </div>
+      <div className="mt-5 grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)] gap-5 sm:grid-cols-[10rem_minmax(0,1fr)]">
+        <figure onMouseLeave={() => setHover(null)}>
+          <div
+            className="grid aspect-square w-full gap-[3px]"
+            style={{ gridTemplateColumns: `repeat(${SIZE}, minmax(0, 1fr))` }}
+          >
+            {q.map((row, r) =>
+              row.map((x, c) => (
+                <div
+                  key={`${r}-${c}`}
+                  onMouseEnter={() => setHover([r, c])}
+                  className={cn(
+                    "rounded-[3px] transition-[background-color] duration-300",
+                    hover && hover[0] === r && hover[1] === c && "ring-2 ring-fg",
+                  )}
+                  style={{ background: cellColor(x.deq, maxAbs) }}
+                />
+              )),
+            )}
+          </div>
+          <figcaption className="mt-2 font-mono text-[11px] text-faint">hover a weight</figcaption>
+        </figure>
 
-        <div className="min-w-0 space-y-5">
+        <div className="min-w-0 space-y-4">
           <div>
-            <label htmlFor="bits" className="flex items-baseline justify-between text-sm">
+            <label htmlFor="bits" className="flex items-baseline justify-between gap-2 text-sm">
               <span className="text-muted">Bit width</span>
               <span className="font-mono text-2xl font-semibold tabular-nums">
                 INT{bits}
-                <span className="ml-2 text-xs font-normal text-faint">{levels} levels</span>
+                <span className="ml-1.5 text-xs font-normal text-faint">{levels} levels</span>
               </span>
             </label>
             <input
@@ -155,11 +138,10 @@ export function QuantizeLab() {
               className="mt-2 w-full cursor-pointer accent-[var(--color-accent)]"
             />
           </div>
-
-          <div role="group" aria-label="Scaling" className="inline-flex rounded-full border border-line bg-bg p-1 text-xs">
+          <div role="group" aria-label="Scaling" className="inline-flex flex-wrap rounded-full border border-line bg-bg p-1 text-xs">
             {[
               { v: true, label: "Scale per row" },
-              { v: false, label: "One scale for all" },
+              { v: false, label: "One scale" },
             ].map((o) => (
               <button
                 key={o.label}
@@ -167,7 +149,7 @@ export function QuantizeLab() {
                 aria-pressed={perChannel === o.v}
                 onClick={() => setPerChannel(o.v)}
                 className={cn(
-                  "cursor-pointer rounded-full px-3.5 py-1.5 font-medium transition-colors",
+                  "cursor-pointer rounded-full px-3 py-1.5 font-medium transition-colors",
                   perChannel === o.v ? "bg-fg text-bg" : "text-muted hover:text-fg",
                 )}
               >
@@ -175,32 +157,32 @@ export function QuantizeLab() {
               </button>
             ))}
           </div>
-
-          <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-line bg-line">
-            {[
-              ["vs FP32", `${(32 / bits).toFixed(1)}× smaller`],
-              ["mean error", meanErr.toFixed(4)],
-              ["relative error", `${(relErr * 100).toFixed(2)}%`],
-            ].map(([k, v]) => (
-              <div key={k} className="flex flex-col-reverse bg-bg px-3 py-3">
-                <dt className="mt-0.5 text-[11px] text-muted">{k}</dt>
-                <dd className="font-mono text-base font-medium tabular-nums">{v}</dd>
-              </div>
-            ))}
-          </dl>
-
-          <p className="rounded-xl bg-bg px-3 py-2.5 font-mono text-[11px] leading-relaxed text-muted">
-            {hover ? (
-              <>
-                w[{hr},{hc}] = {w[hr][hc].toFixed(4)} → q = {cell.q} × {cell.scale.toFixed(5)} ={" "}
-                <span className="text-fg">{cell.deq.toFixed(4)}</span>
-              </>
-            ) : (
-              "Hover a cell to see its value before and after rounding."
-            )}
-          </p>
         </div>
       </div>
+
+      <dl className="mt-5 grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+        {[
+          ["vs FP32", `${(32 / bits).toFixed(1)}× smaller`],
+          ["mean error", meanErr.toFixed(4)],
+          ["relative error", `${(relErr * 100).toFixed(2)}%`],
+        ].map(([k, v]) => (
+          <div key={k} className="flex flex-col-reverse bg-bg px-3 py-2.5">
+            <dt className="mt-0.5 text-[11px] text-muted">{k}</dt>
+            <dd className="font-mono text-base font-medium tabular-nums">{v}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <p className="mt-3 rounded-xl bg-bg px-3 py-2.5 font-mono text-[11px] leading-relaxed text-muted">
+        {hover ? (
+          <>
+            w[{hr},{hc}] = {w[hr][hc].toFixed(4)} → q = {cell.q} × {cell.scale.toFixed(5)} ={" "}
+            <span className="text-fg">{cell.deq.toFixed(4)}</span>
+          </>
+        ) : (
+          "Each 3D bar is one weight. Red is the value rounding threw away."
+        )}
+      </p>
     </div>
   );
 }
