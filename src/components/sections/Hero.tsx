@@ -3,7 +3,7 @@ import { facts, identity } from "../../content/site";
 import { GithubIcon, LinkedinIcon } from "../ui/BrandIcons";
 
 const ghostBtn =
-  "inline-flex h-11 items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 text-sm font-medium backdrop-blur-md transition-colors hover:bg-white/10";
+  "inline-flex h-11 items-center gap-2 rounded-full border border-fg/15 bg-fg/5 px-5 text-sm font-medium backdrop-blur-md transition-colors hover:bg-fg/10";
 
 /** First screen, laid over the 3D model: who, what, and how to reach me. */
 export function Hero() {
@@ -12,7 +12,7 @@ export function Hero() {
       {/* Keeps text readable where it overlaps the model on small screens */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/55 to-black md:bg-gradient-to-r md:from-black/85 md:via-black/40 md:to-transparent"
+        className="absolute inset-0 bg-gradient-to-b from-bg/10 via-bg/55 to-bg md:bg-gradient-to-r md:from-bg/85 md:via-bg/40 md:to-transparent"
       />
       <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col justify-end px-5 pt-24 pb-20 sm:px-8 md:justify-center md:pt-16 md:pb-16">
         <p className="inline-flex items-center gap-2 font-mono text-xs text-muted">
@@ -51,7 +51,7 @@ export function Hero() {
 
         <dl className="mt-9 grid max-w-2xl gap-x-8 gap-y-3 sm:grid-cols-3">
           {facts.map((f) => (
-            <div key={f.label} className="border-l border-white/15 pl-3">
+            <div key={f.label} className="border-l border-fg/15 pl-3">
               <dt className="font-mono text-[11px] tracking-wide text-faint uppercase">{f.label}</dt>
               <dd className="mt-1 text-sm font-medium">{f.value}</dd>
               <dd className="text-xs text-muted">{f.detail}</dd>

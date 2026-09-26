@@ -26,7 +26,7 @@ export function StageChapter({
     <section id={id} data-shape={shape} aria-labelledby={titleId} className="relative flex min-h-svh items-center">
       <div className="mx-auto w-full max-w-6xl px-5 pt-[42svh] pb-16 sm:px-8 md:py-28">
         <div className="max-w-[36rem]">
-          <header className="reveal max-md:rounded-3xl max-md:bg-black/55 max-md:p-5 max-md:backdrop-blur-sm">
+          <header className="reveal max-md:rounded-3xl max-md:bg-bg/55 max-md:p-5 max-md:backdrop-blur-sm">
             <p className="font-mono text-xs tracking-wide text-accent uppercase">{eyebrow}</p>
             <h2 id={titleId} className="mt-3 text-4xl leading-[1.04] font-semibold tracking-[-0.035em] md:text-[3.25rem]">
               {title}

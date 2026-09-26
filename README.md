@@ -31,11 +31,13 @@ src/
   content/site.ts         ← every word and number on the site, including story chapters
   lib/story.ts            ← scroll timeline + shape list shared with the 3D scene
   lib/live.ts             ← state the interactive demos publish for the 3D to mirror
+  lib/detect.ts           ← simulated detector scores + metrics (shared by demo and 3D)
+  lib/theme.ts            ← dark/light switch (saved in localStorage)
   components/
     story/Stage           ← fixed 3D layer behind the whole page; measures chapters
     story/EngineScene     ← three.js scene (lazy-loaded): 1,408 instanced blocks, 15 shapes
     story/EngineStory     ← the pinned opening story: hero, captions, chapter rail
-    play/                 ← BatchingPlayground, QuantizeLab, SwapDemo
+    play/                 ← BatchingPlayground, QuantizeLab, DetectorLab
     sections/             ← Hero, Play, Research, Projects, Experience, Contact
     ui/StageChapter       ← a chapter after the story: content left, `shape` for the 3D
     layout/               ← Header, Footer
@@ -57,8 +59,18 @@ block's position, scale, color, and glow in one InstancedMesh (one draw call),
 and eases each block toward its target so live changes glide.
 
 Three shapes are live: the scheduler wall mirrors `BatchingPlayground`, the
-3D bar chart mirrors `QuantizeLab`, and the two piles mirror `SwapDemo`. Each
-demo writes its state into `lib/live.ts`, and the scene reads it every frame.
+3D bar chart mirrors `QuantizeLab`, and the detector histogram mirrors
+`DetectorLab`. Each demo writes its state into `lib/live.ts`, and the scene
+reads it every frame.
+
+Pinned chapters after the story (Experience) set `data-span`, so the scene's
+local progress runs exactly while the section is pinned; the helix lights one
+segment per role in sync with the card on the left.
+
+**Nav jumps:** `Stage` intercepts in-page link clicks. The page still scrolls,
+but the scene is locked to the destination, so the model morphs straight from
+its current shape to the target's instead of replaying every chapter between.
+The lock releases when the scroll lands or the reader scrolls themselves.
 
 The scene is code-split, so the text renders first, and if WebGL isn't
 available the page keeps working without it.
@@ -71,8 +83,10 @@ available the page keeps working without it.
 - **Quantize a weight matrix**: real symmetric quantization on an 8×8 matrix,
   2–8 bits, per-row vs. one scale, with live error stats; the 3D bars show
   kept vs. lost value.
-- **Spot the swapped dataset**: a replay of the row-count check from the post;
-  the 3D piles swap and get pinned.
+- **Detector threshold + leak** (Bell Labs): ~1,400 simulated flows stacked by
+  attack score. Drag the alert threshold, apply the 95%-recall rule, or leak
+  the testbed columns back in and watch PR-AUC hit a suspicious 1.000. Metrics
+  are computed live from the same counts the 3D draws.
 - **Projects**: one chapter each, with the model forming each project's icon.
 - **Posts**: expand inline, and `#post-<slug>` links open a post directly.
 

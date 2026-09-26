@@ -5,7 +5,7 @@ import { GithubIcon, LinkedinIcon } from "../ui/BrandIcons";
 import { StageChapter } from "../ui/StageChapter";
 
 const ghostBtn =
-  "inline-flex h-11 items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 text-sm font-medium backdrop-blur-md transition-colors hover:bg-white/10";
+  "inline-flex h-11 items-center gap-2 rounded-full border border-fg/15 bg-fg/5 px-5 text-sm font-medium backdrop-blur-md transition-colors hover:bg-fg/10";
 
 /** The finale: the blocks assemble into a monogram while you find the email. */
 export function Contact() {

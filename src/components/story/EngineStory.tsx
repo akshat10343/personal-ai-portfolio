@@ -77,7 +77,7 @@ export function EngineStory() {
             data-to={b.to}
             className="pointer-events-none absolute inset-x-0 bottom-0 opacity-0 md:inset-y-0 md:flex md:items-center"
           >
-            <div className="mx-auto w-full max-w-6xl bg-gradient-to-t from-black via-black/85 to-transparent px-5 pt-16 pb-10 sm:px-8 md:bg-none md:pt-0 md:pb-0">
+            <div className="mx-auto w-full max-w-6xl bg-gradient-to-t from-bg via-bg/85 to-transparent px-5 pt-16 pb-10 sm:px-8 md:bg-none md:pt-0 md:pb-0">
               <div className="max-w-md">
                 <p className="font-mono text-xs tracking-wide text-accent uppercase">{b.kicker}</p>
                 <h2 className="mt-3 text-3xl leading-[1.08] font-semibold tracking-[-0.03em] md:text-5xl">
@@ -97,7 +97,7 @@ export function EngineStory() {
         <ol
           data-rail
           aria-hidden
-          className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-full border border-line bg-black/60 p-1 opacity-0 backdrop-blur-md md:flex"
+          className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-full border border-line bg-bg/60 p-1 opacity-0 backdrop-blur-md md:flex"
         >
           {storyBeats.map((b) => (
             <li

@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { BINS, histograms, N_BENIGN } from "../../lib/detect";
 import { live } from "../../lib/live";
 import { clamp01, ramp, smooth, story, timeline } from "../../lib/story";
 
@@ -195,6 +196,21 @@ const towerOf = (i: number) => {
   return t < 0 ? 3 : t;
 };
 
+/** Score bin of each block in the detector shape (filled with that shape). */
+const detBin = new Int16Array(N);
+
+/** Stack one class's flows into score columns, `depth` blocks deep. */
+function laneInto(buf: Shape, offset: number, counts: number[], depth: number, z0: number, dir: number) {
+  let i = offset;
+  counts.forEach((c, b) => {
+    for (let p = 0; p < c; p++, i++) {
+      buf.pos.set([(b - (BINS - 1) / 2) * 0.11, -1.35 + Math.floor(p / depth) * 0.095, z0 + dir * (p % depth) * 0.1], i * 3);
+      buf.scl.set([0.088, 0.082, 0.088], i * 3);
+      detBin[i] = b;
+    }
+  });
+}
+
 /** Deterministic per-block noise in [0, 1). */
 const hash = (i: number) => {
   const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
@@ -216,6 +232,11 @@ const C = {
   gray: lin("#55555c"),
 };
 const LANES = [C.orange, C.cool, C.violet, C.yellow];
+/** Unlit block colors per theme: graphite on dark, brushed aluminum on light. */
+const NEUTRALS = {
+  dark: { off: lin("#19191d"), dim: lin("#26262c") },
+  light: { off: lin("#c4c4cb"), dim: lin("#b1b1b9") },
+};
 const ICON_COLORS: Record<number, THREE.Color> = { 8: C.cool, 9: C.violet, 10: C.yellow, 11: C.green, 13: C.orange };
 
 /** Group placement per shape; `m` scales it down on portrait screens. */
@@ -228,12 +249,12 @@ const PLACE = [
   P(2.5, -0.25, 0.5, -0.62, 1.12, 0.95), // 4 INT8
   P(2.95, -0.1, -0.05, -0.34, 0.52, 0.5), // 5 live scheduler
   P(2.95, -0.35, 0.52, -0.7, 0.9, 0.7), // 6 quant bars
-  P(3.0, -0.1, 0.38, -0.55, 1.0, 0.72), // 7 piles
+  P(2.95, -0.2, 0.3, -0.5, 1.0, 0.64), // 7 detector
   P(2.9, 0, 0.05, -0.35, 0.85, 0.7), // 8 shield
   P(2.9, 0, 0.05, -0.35, 0.85, 0.7), // 9 bubble
   P(2.9, 0, 0.05, -0.35, 0.85, 0.7), // 10 sun
   P(2.9, 0, 0.05, -0.35, 0.85, 0.7), // 11 apple
-  P(2.9, -0.15, 0.12, 0, 0.78, 0.7), // 12 helix
+  P(2.9, -0.1, 0.12, 0, 0.68, 0.62), // 12 helix
   P(2.75, 0, 0.05, -0.3, 0.82, 0.66), // 13 monogram
   P(3.0, 0.1, 0.32, -0.55, 0.95, 0.72), // 14 towers
 ];
@@ -366,21 +387,10 @@ function Blocks({ reduced }: { reduced: boolean }) {
         buf.scl.set([0.34 * s, 0.115 * s, 0.34 * s], i * 3);
       }
     } else if (shape === 7) {
-      // Two piles sized like the files (82K vs ≈175K rows); they trade places.
-      const swapped = live.swap >= 2;
-      for (let i = 0; i < N; i++) {
-        const small = i < 450;
-        const k = small ? i : i - 450;
-        const [w, d] = small ? [10, 5] : [12, 8];
-        const x0 = small ? (swapped ? 1.3 : -1.3) : swapped ? -1.15 : 1.15;
-        const z0 = swapped ? (small ? 0.75 : -0.75) : 0;
-        buf.pos.set(
-          [x0 + ((k % w) - (w - 1) / 2) * 0.15, -1.1 + Math.floor(k / (w * d)) * 0.15, z0 + ((Math.floor(k / w) % d) - (d - 1) / 2) * 0.15],
-          i * 3,
-        );
-        const s = !small && k >= 958 ? 0 : 0.125;
-        buf.scl.set([s, s, s], i * 3);
-      }
+      // Every flow stacked by its detector score: normal traffic in front, attacks behind.
+      const { benign, attack } = histograms(live.detect.leaky);
+      laneInto(buf, 0, benign, 3, 0.45, 1);
+      laneInto(buf, N_BENIGN, attack, 7, 0.22, -1);
     } else if (shape === 14) {
       // Throughput towers grow in as the chapter scrolls.
       let i = 0;
@@ -484,21 +494,36 @@ function Blocks({ reduced }: { reduced: boolean }) {
         return mixInto(out, C.off, C.hot, 0.9, 1.1);
       }
       case 7: {
-        // Downloaded → flagged red → swapped green → pinned (breathing glow).
-        if (live.swap === 1) return mixInto(out, C.off, C.hot, 0.7 + 0.3 * h, 0.9);
-        if (live.swap >= 2) {
-          const pulse = live.swap === 3 ? 0.6 + 0.6 * Math.sin(time * 2.2) ** 2 : 0.4;
-          return mixInto(out, C.off, C.green, 0.6 + 0.3 * h, pulse);
+        // Caught attacks green, missed attacks red, false alarms yellow,
+        // passed traffic blue; the threshold column is edged in white.
+        const t = live.detect.t;
+        const flagged = detBin[i] >= t;
+        const attack = i >= N_BENIGN;
+        if (attack) mixInto(out, C.off, flagged ? C.green : C.hot, 0.8 + 0.2 * h, flagged ? 0.55 : 1.1);
+        else if (flagged) mixInto(out, C.off, C.yellow, 0.9, 1.0);
+        else mixInto(out, C.off, C.cool, 0.5 + 0.2 * h, 0.2);
+        if (detBin[i] === t) {
+          out[0] += (C.white.r - out[0]) * 0.45;
+          out[1] += (C.white.g - out[1]) * 0.45;
+          out[2] += (C.white.b - out[2]) * 0.45;
+          out[3] += 0.8;
         }
-        return mixInto(out, C.off, i < 450 ? C.cool : C.violet, 0.45 + 0.3 * h, 0.35);
+        return;
       }
       case 12: {
-        // Helix: lights the strands up to how far you've scrolled the timeline.
+        // Helix: one segment per role. The current role's segment burns
+        // bright with a head sweeping through it; past roles stay warm.
         const t = S.meta[12][i];
+        const n = live.roles;
+        const cur = Math.min(n - 1, Math.floor(lp * n));
+        const seg = Math.min(n - 1, Math.floor(t * n));
         const strand = i % 2 ? C.cool : C.orange;
-        if (Math.abs(t - lp) < 0.02) return mixInto(out, strand, C.white, 0.7, 2.2);
-        if (t < lp) return mixInto(out, C.off, strand, 0.8, 0.8);
-        return mixInto(out, C.off, strand, 0.12 + 0.1 * h, 0.05);
+        if (seg === cur) {
+          if (Math.abs(t - Math.min(lp, 0.999)) < 0.012) return mixInto(out, strand, C.white, 0.7, 2.4);
+          return mixInto(out, C.off, strand, 0.95, 1.3);
+        }
+        if (seg < cur) return mixInto(out, C.off, strand, 0.55, 0.3);
+        return mixInto(out, C.off, strand, 0.12 + 0.1 * h, 0.04);
       }
       case 14: {
         // Towers: the KV-cache stage in accent, the HF reference in silver.
@@ -520,14 +545,28 @@ function Blocks({ reduced }: { reduced: boolean }) {
 
   const colA: RGBG = [0, 0, 0, 0];
   const colB: RGBG = [0, 0, 0, 0];
+  const themeRef = useRef("");
+  // Eased group placement, so nav jumps glide instead of snapping.
+  const place = useRef<{ x: number; y: number; s: number; rx: number; ry: number } | null>(null);
 
   useFrame((state, dt) => {
     const m = mesh.current;
     const g = group.current;
     if (!m || !g || !m.instanceColor) return;
 
-    // Ease toward the scroll position so the scrollbar feels attached, not jerky.
-    if (smoothVh.current === null || reduced) smoothVh.current = story.vh;
+    // Swap the unlit block colors when the theme changes.
+    const theme = document.documentElement.dataset.theme === "light" ? "light" : "dark";
+    if (theme !== themeRef.current) {
+      themeRef.current = theme;
+      C.off.copy(NEUTRALS[theme].off);
+      C.dim.copy(NEUTRALS[theme].dim);
+    }
+
+    // Ease toward the scroll position so the scrollbar feels attached, not
+    // jerky. During a nav jump, go straight to the destination instead, and
+    // let the per-block easing below carry every block there in one morph.
+    const jumping = story.lock !== null || performance.now() - story.jumpAt < 1400;
+    if (smoothVh.current === null || reduced || story.lock !== null) smoothVh.current = story.lock ?? story.vh;
     else smoothVh.current += (story.vh - smoothVh.current) * (1 - Math.exp(-dt * 7));
     const v = smoothVh.current;
     const time = reduced ? 1.7 : state.clock.elapsedTime;
@@ -546,12 +585,14 @@ function Blocks({ reduced }: { reduced: boolean }) {
     const SB = A === B ? SA : shapeOf(B, lpB, S.bufB);
 
     // Blocks glide to their targets; the first frame snaps so nothing flies in from 0.
-    const ease = reduced || !primed.current ? 1 : 1 - Math.exp(-dt * 12);
+    const ease = reduced || !primed.current ? 1 : 1 - Math.exp(-dt * (jumping ? 3.5 : 12));
     primed.current = true;
     const mat = m.instanceMatrix.array as Float32Array;
     const col = m.instanceColor.array as Float32Array;
     const gl = glow.array as Float32Array;
     const { pos, scl } = cur;
+    // On the light theme, glow washes colors toward white, so keep it subtle.
+    const glowScale = theme === "light" ? 0.3 : 1;
 
     for (let i = 0; i < N; i++) {
       // Staggered morph: each block starts a little later than the last.
@@ -579,7 +620,7 @@ function Blocks({ reduced }: { reduced: boolean }) {
       col[j] = cur.col[j];
       col[j + 1] = cur.col[j + 1];
       col[j + 2] = cur.col[j + 2];
-      gl[i] = cur.glow[i];
+      gl[i] = cur.glow[i] * glowScale;
     }
     m.instanceMatrix.needsUpdate = true;
     m.instanceColor.needsUpdate = true;
@@ -595,10 +636,22 @@ function Blocks({ reduced }: { reduced: boolean }) {
     const weight = (s: number) => (A === s ? 1 - gt : 0) + (B === s ? gt : 0);
     const spinWeight = SPINS.reduce((acc, s) => acc + weight(s), 0);
     const spin = reduced ? 0 : Math.sin(time * 0.25) * 0.35 * spinWeight;
-    const helixTurn = weight(12) * (lp(12) * Math.PI * 1.5 + (reduced ? 0 : time * 0.15));
-    g.scale.setScalar(mix(pA.s, pB.s) * (portrait ? mix(pA.m, pB.m) : 1));
-    g.position.set(portrait ? 0 : mix(pA.x, pB.x), portrait ? 1.9 : mix(pA.y, pB.y), 0);
-    g.rotation.set(mix(pA.rx, pB.rx) + story.py * 0.06, mix(pA.ry, pB.ry) + spin + helixTurn + story.px * 0.12, 0);
+    const w12 = weight(12);
+    const helixTurn = w12 * (lp(12) * Math.PI * 1.5 + (reduced ? 0 : time * 0.15));
+    const target = {
+      s: mix(pA.s, pB.s) * (portrait ? mix(pA.m, pB.m) : 1),
+      x: portrait ? 0 : mix(pA.x, pB.x),
+      // The helix slides so the current role's segment stays near the middle.
+      y: (portrait ? 1.9 : mix(pA.y, pB.y)) - w12 * (lp(12) - 0.5) * 5.4 * 0.3 * mix(pA.s, pB.s),
+      rx: mix(pA.rx, pB.rx),
+      ry: mix(pA.ry, pB.ry) + spin + helixTurn,
+    };
+    const pl = (place.current ??= { ...target });
+    const ge = reduced ? 1 : 1 - Math.exp(-dt * (jumping ? 3.5 : 14));
+    for (const key of ["s", "x", "y", "rx", "ry"] as const) pl[key] += (target[key] - pl[key]) * ge;
+    g.scale.setScalar(pl.s);
+    g.position.set(pl.x, pl.y, 0);
+    g.rotation.set(pl.rx + story.py * 0.06, pl.ry + story.px * 0.12, 0);
 
     const cam = camera as THREE.PerspectiveCamera;
     const z = portrait ? 11 + (1 - aspect) * 10 : 11;
@@ -630,13 +683,34 @@ function Dust({ reduced }: { reduced: boolean }) {
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     return g;
   }, []);
-  useEffect(() => () => geometry.dispose(), [geometry]);
+  // A soft round sprite, so dust reads as specks rather than square pixels.
+  const sprite = useMemo(() => {
+    const c = document.createElement("canvas");
+    c.width = c.height = 32;
+    const ctx = c.getContext("2d")!;
+    const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    g.addColorStop(0, "rgba(255,255,255,1)");
+    g.addColorStop(0.5, "rgba(255,255,255,0.5)");
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 32, 32);
+    return new THREE.CanvasTexture(c);
+  }, []);
+  const mat = useRef<THREE.PointsMaterial>(null);
+  useEffect(
+    () => () => {
+      geometry.dispose();
+      sprite.dispose();
+    },
+    [geometry, sprite],
+  );
   useFrame((_, dt) => {
     if (ref.current && !reduced) ref.current.rotation.y += dt * 0.012;
+    if (mat.current) mat.current.color.set(document.documentElement.dataset.theme === "light" ? "#6e6e78" : "#8a8a92");
   });
   return (
     <points ref={ref} geometry={geometry}>
-      <pointsMaterial size={0.035} color="#8a8a92" transparent opacity={0.55} sizeAttenuation depthWrite={false} />
+      <pointsMaterial ref={mat} map={sprite} size={0.06} transparent opacity={0.6} sizeAttenuation depthWrite={false} />
     </points>
   );
 }

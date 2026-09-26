@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { experience, posts, type Post } from "../../content/site";
-import { SwapDemo } from "../play/SwapDemo";
+import { DetectorLab } from "../play/DetectorLab";
 import { StageChapter } from "../ui/StageChapter";
 
 /** The post named by a #post-<slug> link, so individual posts are shareable. */
@@ -68,13 +68,14 @@ export function Research() {
               {role.role}, {role.period}. {role.points[0]}
             </p>
             <p className="mt-3">
-              The two piles of blocks are the files from a popular benchmark mirror, sized by row count. Click
-              through and find what was wrong with them.
+              Each block is one network flow, stacked by the detector’s attack score: attacks at the back, normal
+              traffic in front. Pick where alerts fire, then leak the testbed columns back in and watch the problem
+              turn suspiciously perfect.
             </p>
           </>
         }
       >
-        <SwapDemo />
+        <DetectorLab />
       </StageChapter>
 
       <StageChapter

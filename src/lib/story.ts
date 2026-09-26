@@ -11,6 +11,13 @@ export const story = {
   /** Pointer position in [-1, 1], for a little parallax. */
   px: 0,
   py: 0,
+  /**
+   * Set while a nav click scrolls the page: the scene shows this position
+   * straight away instead of following the scroll through every chapter.
+   */
+  lock: null as number | null,
+  /** When the last nav jump started (performance.now()), for a softer morph. */
+  jumpAt: -1e9,
 };
 
 /** Scroll length of the pinned engine story, in vh (plus one screen of stick). */
@@ -22,7 +29,7 @@ export type Key = { at: number; shape: number };
  * Shapes:
  *  0 stacked model        5 live scheduler wall     10 sun (SolarSave)
  *  1 exploded layers      6 live quantized bars     11 apple (Calorie Counter)
- *  2 KV-cache wall        7 train/test piles        12 double helix (experience)
+ *  2 KV-cache wall        7 detector histogram      12 double helix (experience)
  *  3 batching lanes       8 shield (Tomshield)      13 "AK" monogram (contact)
  *  4 INT8 stack           9 chat bubble (NLP)       14 throughput towers
  */
@@ -56,8 +63,9 @@ export const timeline = {
 /**
  * After the story, every element marked `data-shape` becomes a chapter of the
  * stage: its shape holds while the element crosses the middle of the screen,
- * and morphs in from the previous chapter's shape around its top edge.
- * Re-run whenever layout changes (resize, fonts, a post expanding).
+ * and morphs in from the previous chapter's shape around its top edge. A
+ * pinned chapter sets `data-span` (vh of pinned scroll) so its local progress
+ * runs exactly while it's pinned. Re-run whenever layout changes.
  */
 export function measureTimeline() {
   const vh = window.innerHeight / 100;
@@ -66,14 +74,19 @@ export function measureTimeline() {
   let prev = 4;
   for (const el of document.querySelectorAll<HTMLElement>("[data-shape]")) {
     const r = el.getBoundingClientRect();
-    const start = (r.top + window.scrollY) / vh - 50;
+    const top = (r.top + window.scrollY) / vh;
+    const start = top - 50;
     const end = (r.bottom + window.scrollY) / vh - 50;
     const shape = Number(el.dataset.shape);
     if (shape !== prev) {
       keys.push({ at: start - 22, shape: prev }, { at: start + 14, shape });
     }
-    const [s0] = ranges[shape] ?? [start];
-    ranges[shape] = [Math.min(s0, start), end];
+    if (el.dataset.span) {
+      ranges[shape] = [top, top + Number(el.dataset.span)];
+    } else {
+      const [s0] = ranges[shape] ?? [start];
+      ranges[shape] = [Math.min(s0, start), end];
+    }
     prev = shape;
   }
   keys.push({ at: 1e9, shape: prev });
