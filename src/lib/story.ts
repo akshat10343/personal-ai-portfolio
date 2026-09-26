@@ -63,9 +63,8 @@ export const timeline = {
 /**
  * After the story, every element marked `data-shape` becomes a chapter of the
  * stage: its shape holds while the element crosses the middle of the screen,
- * and morphs in from the previous chapter's shape around its top edge. A
- * pinned chapter sets `data-span` (vh of pinned scroll) so its local progress
- * runs exactly while it's pinned. Re-run whenever layout changes.
+ * and morphs in from the previous chapter's shape around its top edge.
+ * Re-run whenever layout changes (resize, fonts, a post expanding).
  */
 export function measureTimeline() {
   const vh = window.innerHeight / 100;
@@ -74,19 +73,14 @@ export function measureTimeline() {
   let prev = 4;
   for (const el of document.querySelectorAll<HTMLElement>("[data-shape]")) {
     const r = el.getBoundingClientRect();
-    const top = (r.top + window.scrollY) / vh;
-    const start = top - 50;
+    const start = (r.top + window.scrollY) / vh - 50;
     const end = (r.bottom + window.scrollY) / vh - 50;
     const shape = Number(el.dataset.shape);
     if (shape !== prev) {
       keys.push({ at: start - 22, shape: prev }, { at: start + 14, shape });
     }
-    if (el.dataset.span) {
-      ranges[shape] = [top, top + Number(el.dataset.span)];
-    } else {
-      const [s0] = ranges[shape] ?? [start];
-      ranges[shape] = [Math.min(s0, start), end];
-    }
+    const [s0] = ranges[shape] ?? [start];
+    ranges[shape] = [Math.min(s0, start), end];
     prev = shape;
   }
   keys.push({ at: 1e9, shape: prev });

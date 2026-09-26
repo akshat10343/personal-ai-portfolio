@@ -63,10 +63,6 @@ Three shapes are live: the scheduler wall mirrors `BatchingPlayground`, the
 `DetectorLab`. Each demo writes its state into `lib/live.ts`, and the scene
 reads it every frame.
 
-Pinned chapters after the story (Experience) set `data-span`, so the scene's
-local progress runs exactly while the section is pinned; the helix lights one
-segment per role in sync with the card on the left.
-
 **Nav jumps:** `Stage` intercepts in-page link clicks. The page still scrolls,
 but the scene is locked to the destination, so the model morphs straight from
 its current shape to the target's instead of replaying every chapter between.

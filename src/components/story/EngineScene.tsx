@@ -254,7 +254,7 @@ const PLACE = [
   P(2.9, 0, 0.05, -0.35, 0.85, 0.7), // 9 bubble
   P(2.9, 0, 0.05, -0.35, 0.85, 0.7), // 10 sun
   P(2.9, 0, 0.05, -0.35, 0.85, 0.7), // 11 apple
-  P(2.9, -0.1, 0.12, 0, 0.68, 0.62), // 12 helix
+  P(2.9, -0.15, 0.12, 0, 0.78, 0.7), // 12 helix
   P(2.75, 0, 0.05, -0.3, 0.82, 0.66), // 13 monogram
   P(3.0, 0.1, 0.32, -0.55, 0.95, 0.72), // 14 towers
 ];
@@ -511,19 +511,12 @@ function Blocks({ reduced }: { reduced: boolean }) {
         return;
       }
       case 12: {
-        // Helix: one segment per role. The current role's segment burns
-        // bright with a head sweeping through it; past roles stay warm.
+        // Helix: lights the strands up to how far you've scrolled the timeline.
         const t = S.meta[12][i];
-        const n = live.roles;
-        const cur = Math.min(n - 1, Math.floor(lp * n));
-        const seg = Math.min(n - 1, Math.floor(t * n));
         const strand = i % 2 ? C.cool : C.orange;
-        if (seg === cur) {
-          if (Math.abs(t - Math.min(lp, 0.999)) < 0.012) return mixInto(out, strand, C.white, 0.7, 2.4);
-          return mixInto(out, C.off, strand, 0.95, 1.3);
-        }
-        if (seg < cur) return mixInto(out, C.off, strand, 0.55, 0.3);
-        return mixInto(out, C.off, strand, 0.12 + 0.1 * h, 0.04);
+        if (Math.abs(t - lp) < 0.02) return mixInto(out, strand, C.white, 0.7, 2.2);
+        if (t < lp) return mixInto(out, C.off, strand, 0.8, 0.8);
+        return mixInto(out, C.off, strand, 0.12 + 0.1 * h, 0.05);
       }
       case 14: {
         // Towers: the KV-cache stage in accent, the HF reference in silver.
@@ -636,13 +629,11 @@ function Blocks({ reduced }: { reduced: boolean }) {
     const weight = (s: number) => (A === s ? 1 - gt : 0) + (B === s ? gt : 0);
     const spinWeight = SPINS.reduce((acc, s) => acc + weight(s), 0);
     const spin = reduced ? 0 : Math.sin(time * 0.25) * 0.35 * spinWeight;
-    const w12 = weight(12);
-    const helixTurn = w12 * (lp(12) * Math.PI * 1.5 + (reduced ? 0 : time * 0.15));
+    const helixTurn = weight(12) * (lp(12) * Math.PI * 1.5 + (reduced ? 0 : time * 0.15));
     const target = {
       s: mix(pA.s, pB.s) * (portrait ? mix(pA.m, pB.m) : 1),
       x: portrait ? 0 : mix(pA.x, pB.x),
-      // The helix slides so the current role's segment stays near the middle.
-      y: (portrait ? 1.9 : mix(pA.y, pB.y)) - w12 * (lp(12) - 0.5) * 5.4 * 0.3 * mix(pA.s, pB.s),
+      y: portrait ? 1.9 : mix(pA.y, pB.y),
       rx: mix(pA.rx, pB.rx),
       ry: mix(pA.ry, pB.ry) + spin + helixTurn,
     };

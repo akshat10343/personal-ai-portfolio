@@ -22,6 +22,4 @@ export const live = {
   },
   /** The detector demo: leaked columns on/off, and the alert threshold bin. */
   detect: { leaky: false, t: 16 },
-  /** How many roles the experience helix is split into. */
-  roles: 6,
 };
